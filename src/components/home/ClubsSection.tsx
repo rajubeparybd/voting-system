@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getActiveClubs } from '@/actions/club';
