@@ -84,6 +84,25 @@ export async function getEvent(id: string) {
 
 export async function createEvent(data: EventFormValues) {
     try {
+        // Check if there's already an event with UPCOMING or ONGOING status for the same club and position
+        const existingEvent = await db.event.findFirst({
+            where: {
+                clubId: data.clubId,
+                position: data.position,
+                status: {
+                    in: ['UPCOMING', 'ONGOING'],
+                },
+            },
+        });
+
+        // If there's already an event, throw an error
+        if (existingEvent) {
+            throw new Error(
+                `An active event already exists for the ${data.position} position in this club`
+            );
+        }
+
+        // If no existing event, create the new event
         const event = await db.event.create({
             data: {
                 ...data,
@@ -94,7 +113,11 @@ export async function createEvent(data: EventFormValues) {
         return event;
     } catch (error) {
         console.error('Failed to create event:', error);
-        throw new Error('Failed to create event');
+        if (error instanceof Error) {
+            throw error;
+        } else {
+            throw new Error('Failed to create event');
+        }
     }
 }
 

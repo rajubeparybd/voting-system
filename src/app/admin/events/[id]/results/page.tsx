@@ -4,9 +4,6 @@ import { getEvent } from '@/actions/event';
 import EventDetailsCard from '@/components/events/EventDetailsCard';
 import EventVotingResults from '@/components/events/EventVotingResults';
 import { use } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 
 interface EventResultsPageProps {
     params: Promise<{
