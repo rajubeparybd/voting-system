@@ -21,6 +21,7 @@ import {
     Calendar,
     MoreVertical,
     Eye,
+    BarChart2,
 } from 'lucide-react';
 import {
     Dialog,
@@ -376,6 +377,21 @@ export default function EventsPage() {
                                                     <Eye className="mr-2 h-4 w-4" />
                                                     View Details
                                                 </DropdownMenuItem>
+                                                {(event.status === 'ONGOING' ||
+                                                    event.status ===
+                                                        'COMPLETED') && (
+                                                    <DropdownMenuItem
+                                                        onClick={() =>
+                                                            router.push(
+                                                                `/admin/events/${event.id}/results`
+                                                            )
+                                                        }
+                                                        className="hover:bg-gray-700 hover:text-white"
+                                                    >
+                                                        <BarChart2 className="mr-2 h-4 w-4" />
+                                                        View Results
+                                                    </DropdownMenuItem>
+                                                )}
                                                 <DropdownMenuItem
                                                     onClick={() =>
                                                         router.push(
