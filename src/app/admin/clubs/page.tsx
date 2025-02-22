@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Pencil, Trash2, Users2 } from 'lucide-react';
+import {
+    PlusCircle,
+    Pencil,
+    Trash2,
+    Users2,
+    AlertTriangle,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
     Table,
@@ -14,6 +20,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { getClubs, deleteClub } from '@/actions/club';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import Image from 'next/image';
 import { toast } from 'sonner';
 
@@ -39,6 +46,8 @@ interface RawClub extends Omit<Club, 'status'> {
 export default function ClubsPage() {
     const [clubs, setClubs] = useState<Club[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [clubToDelete, setClubToDelete] = useState<string | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -61,16 +70,21 @@ export default function ClubsPage() {
         fetchClubs();
     }, []);
 
-    const handleDelete = async (id: string) => {
-        if (confirm('Are you sure you want to delete this club?')) {
-            try {
-                await deleteClub(id);
-                setClubs(clubs.filter(club => club.id !== id));
-                toast.success('Club deleted successfully');
-            } catch (error) {
-                console.error('Failed to delete club:', error);
-                toast.error('Failed to delete club');
-            }
+    const handleDeleteClick = (id: string) => {
+        setClubToDelete(id);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!clubToDelete) return;
+
+        try {
+            await deleteClub(clubToDelete);
+            setClubs(clubs.filter(club => club.id !== clubToDelete));
+            toast.success('Club deleted successfully');
+        } catch (error) {
+            console.error('Failed to delete club:', error);
+            toast.error('Failed to delete club');
         }
     };
 
@@ -187,7 +201,7 @@ export default function ClubsPage() {
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            className="border-gray-700 text-gray-300 hover:bg-gray-700"
+                                            className="border-indigo-500 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/30 hover:text-white"
                                             onClick={() =>
                                                 router.push(
                                                     `/admin/clubs/${club.id}/edit`
@@ -201,7 +215,7 @@ export default function ClubsPage() {
                                             size="icon"
                                             className="bg-red-500/10 text-red-500 hover:bg-red-500/30"
                                             onClick={() =>
-                                                handleDelete(club.id)
+                                                handleDeleteClick(club.id)
                                             }
                                         >
                                             <Trash2 className="h-4 w-4" />
@@ -236,6 +250,18 @@ export default function ClubsPage() {
             </div>
 
             {renderClubList()}
+
+            <ConfirmationDialog
+                isOpen={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Club"
+                description="Are you sure you want to delete this club? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmVariant="destructive"
+                icon={<AlertTriangle className="h-10 w-10 text-red-500" />}
+            />
         </div>
     );
 }
