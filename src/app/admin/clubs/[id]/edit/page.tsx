@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ClubSchema, ClubFormValues } from '@/validation/club';
 import { getClub, updateClub } from '@/actions/club';
+import { uploadToCloudinary } from '@/actions/upload';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { PositionsInput } from '@/components/club/PositionsInput';
+import { ImageUpload } from '@/components/ui/image-upload';
 import {
     Form,
     FormControl,
@@ -42,6 +44,8 @@ export default function EditClubPage({
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const imagePreviewRef = useRef<string | null>(null);
 
     const form = useForm<ClubFormValues>({
         resolver: zodResolver(ClubSchema),
@@ -90,8 +94,31 @@ export default function EditClubPage({
     }, [resolvedParams.id, form, router]);
 
     const onSubmit = async (values: ClubFormValues) => {
+        console.log('Form values before update:', values);
         setIsSubmitting(true);
+
         try {
+            // If we have a selected file, upload it to Cloudinary
+            if (selectedFile && imagePreviewRef.current) {
+                try {
+                    const imageUrl = await uploadToCloudinary(
+                        imagePreviewRef.current
+                    );
+                    values.image = imageUrl;
+                } catch (error) {
+                    console.error('Failed to upload image:', error);
+                    toast.error('Failed to upload image');
+                    setIsSubmitting(false);
+                    return;
+                }
+            } else if (values.image === 'pending-upload') {
+                // If we have a pending upload but no file, something went wrong
+                toast.error('Image is required but no file was selected');
+                setIsSubmitting(false);
+                return;
+            }
+
+            // Now update the club with the updated values
             await updateClub(resolvedParams.id, values);
             toast.success('Club updated successfully');
             router.push('/admin/clubs');
@@ -101,6 +128,29 @@ export default function EditClubPage({
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleFileChange = (file: File | null) => {
+        setSelectedFile(file);
+
+        // If file is null, clear the image value
+        if (!file) {
+            form.setValue('image', '');
+            imagePreviewRef.current = null;
+            return;
+        }
+
+        // Create a base64 preview and store it in the ref
+        const reader = new FileReader();
+        reader.onload = e => {
+            const result = e.target?.result as string;
+            imagePreviewRef.current = result;
+
+            // Set a temporary value to pass validation
+            // The actual URL will be set after Cloudinary upload
+            form.setValue('image', 'pending-upload');
+        };
+        reader.readAsDataURL(file);
     };
 
     if (isLoading) {
@@ -185,12 +235,14 @@ export default function EditClubPage({
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className="text-gray-200">
-                                            Image URL
+                                            Club Image
                                         </FormLabel>
                                         <FormControl>
-                                            <Input
-                                                placeholder="Enter image URL"
-                                                {...field}
+                                            <ImageUpload
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                onFileChange={handleFileChange}
+                                                disabled={isSubmitting}
                                             />
                                         </FormControl>
                                         <FormMessage className="text-red-400" />
