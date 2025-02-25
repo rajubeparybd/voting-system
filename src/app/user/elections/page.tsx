@@ -162,9 +162,14 @@ function EventCard({ event }: { event: EventWithClub }) {
                         </Link>
                     )}
                     {event.status === 'UPCOMING' && (
-                        <button className="w-full rounded-lg border border-[#F8D9AE] py-2 font-semibold text-[#F8D9AE] transition-colors hover:bg-[#F8D9AE]/10">
-                            Coming Soon
-                        </button>
+                        <Link
+                            href={`/user/elections/${event.id}/upcoming`}
+                            className="mt-4 block"
+                        >
+                            <button className="w-full rounded-lg bg-[#F8D9AE] py-2 font-semibold text-[#262626]">
+                                View Details
+                            </button>
+                        </Link>
                     )}
                     {event.status === 'COMPLETED' && (
                         <Link

@@ -114,7 +114,10 @@ function ElectionCard({
             <h3 className="mb-2 font-semibold">{title}</h3>
             <p className="mb-2 text-sm text-[#F8D9AE]">{datetime}</p>
             <CountdownTimer targetDate={eventDate} />
-            <Link href={`/user/elections/${id}`} className="mt-4 block">
+            <Link
+                href={`/user/elections/${id}/upcoming`}
+                className="mt-4 block"
+            >
                 <button className="w-full rounded-lg bg-[#F8D9AE] py-2 font-semibold text-[#262626]">
                     View Details
                 </button>
