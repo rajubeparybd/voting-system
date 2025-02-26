@@ -128,7 +128,7 @@ export default function ClubMembership() {
     }
 
     return (
-        <div className="rounded-2xl bg-[#191B22] p-4 lg:col-span-8 lg:p-6">
+        <div className="mb-4 rounded-2xl bg-[#191B22] p-4 lg:col-span-8 lg:p-6">
             <div className="mb-6 flex items-center justify-between">
                 <h2 className="font-poppins text-xl font-semibold text-white">
                     Club Membership

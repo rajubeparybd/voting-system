@@ -6,7 +6,8 @@ import { useEffect } from 'react';
 import UserInfoCard from '@/components/user/UserInfoCard';
 import ClubMembership from '@/components/user/ClubMembership';
 import UpcomingElections from '@/components/user/UpcomingElections';
-import UpcomingEvents from '@/components/user/UpcomingEvents';
+import OngoingElections from '@/components/user/OngoingElections';
+// import UpcomingEvents from '@/components/user/UpcomingEvents';
 
 export default function UserDashboard() {
     const { data: session, status } = useSession();
@@ -29,12 +30,13 @@ export default function UserDashboard() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-8">
                 <div className="lg:col-span-8">
                     <div className="space-y-4 lg:space-y-6">
+                        <OngoingElections />
                         <ClubMembership />
-                        <UpcomingElections />
                     </div>
                 </div>
                 <div className="lg:col-span-4">
-                    <UpcomingEvents />
+                    <UpcomingElections />
+                    {/* <UpcomingEvents /> */}
                 </div>
             </div>
         </>

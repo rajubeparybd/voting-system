@@ -5,9 +5,14 @@ import { EventFormValues } from '@/validation/event';
 import { revalidatePath } from 'next/cache';
 import { EventStatus, Application } from '@prisma/client';
 
-export async function getEvents() {
+export async function getEvents(limit?: number, status?: string) {
     try {
         const events = await db.event.findMany({
+            where: status
+                ? {
+                      status: status as EventStatus,
+                  }
+                : undefined,
             include: {
                 club: {
                     select: {
@@ -19,6 +24,7 @@ export async function getEvents() {
             orderBy: {
                 createdAt: 'desc',
             },
+            ...(limit ? { take: limit } : {}),
         });
         return events;
     } catch (error) {
