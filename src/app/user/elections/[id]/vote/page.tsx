@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getEvent, submitVote, hasUserVoted } from '@/actions/event';
+import {
+    getEvent,
+    submitVote,
+    hasUserVoted,
+    isUserClubMember,
+} from '@/actions/event';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +54,7 @@ export default function VotePage({
     const [voteSuccess, setVoteSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasAlreadyVoted, setHasAlreadyVoted] = useState(false);
+    const [isClubMember, setIsClubMember] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -67,20 +73,32 @@ export default function VotePage({
                 const eventData = await getEvent(resolvedParams.id);
                 setEvent(eventData as EventDetails);
 
-                // Check if user has already voted
-                try {
-                    const userVoted = await hasUserVoted(
+                if (eventData) {
+                    // Check if user is a member of the club hosting this event
+                    const memberCheck = await isUserClubMember(
                         resolvedParams.id,
                         session.user.id
                     );
-                    setHasAlreadyVoted(userVoted);
+                    setIsClubMember(memberCheck);
 
-                    if (userVoted) {
-                        setError('You have already voted in this election');
+                    // Check if user has already voted
+                    try {
+                        const userVoted = await hasUserVoted(
+                            resolvedParams.id,
+                            session.user.id
+                        );
+                        setHasAlreadyVoted(userVoted);
+
+                        if (userVoted) {
+                            setError('You have already voted in this election');
+                        }
+                    } catch (checkError) {
+                        console.error(
+                            'Error checking vote status:',
+                            checkError
+                        );
+                        // Continue showing the voting interface even if check fails
                     }
-                } catch (checkError) {
-                    console.error('Error checking vote status:', checkError);
-                    // Continue showing the voting interface even if check fails
                 }
             } catch (error) {
                 console.error('Error fetching event details:', error);
@@ -206,6 +224,34 @@ export default function VotePage({
                             Return to Elections
                         </button>
                     </Link>
+                </div>
+            </div>
+        );
+    }
+
+    if (!isClubMember) {
+        return (
+            <div className="container mx-auto py-8">
+                <div className="rounded-xl bg-red-500/10 p-6 text-center">
+                    <h2 className="mb-2 text-xl font-semibold text-white">
+                        Club Membership Required
+                    </h2>
+                    <p className="mb-4 text-gray-400">
+                        You must be a member of {event.club.name} to vote in
+                        this election.
+                    </p>
+                    <div className="mt-6 flex justify-center gap-4">
+                        <Link href={`/user/elections/${event.id}/results`}>
+                            <button className="rounded-lg bg-[#F8D9AE] px-4 py-2 font-semibold text-[#262626]">
+                                View Results
+                            </button>
+                        </Link>
+                        <Link href="/user/clubs">
+                            <button className="rounded-lg border border-gray-600 px-4 py-2 font-semibold text-gray-300 hover:bg-gray-800">
+                                Join Clubs
+                            </button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         );

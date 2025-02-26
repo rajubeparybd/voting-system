@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getEvent, getVoteResults, hasUserVoted } from '@/actions/event';
+import { getEvent, getVoteResults } from '@/actions/event';
 import Image from 'next/image';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import {
     User2,
     Trophy,
-    AlertCircle,
     CalendarClock,
     CheckCircle2,
     XCircle,
@@ -71,8 +70,6 @@ export default function ResultsPage({
     const [voteResults, setVoteResults] = useState<VoteResults | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const [hasVoted, setHasVoted] = useState(false);
-    const [accessChecked, setAccessChecked] = useState(false);
 
     useEffect(() => {
         if (status === 'loading') return;
@@ -82,31 +79,15 @@ export default function ResultsPage({
             return;
         }
 
-        async function checkAccess() {
-            try {
-                if (!session?.user?.id) return;
-
-                // Check if the user has voted in this event
-                const userVoted = await hasUserVoted(
-                    resolvedParams.id,
-                    session.user.id
-                );
-                setHasVoted(userVoted);
-                setAccessChecked(true);
-            } catch (error) {
-                console.error('Error checking if user has voted:', error);
-                // Allow access even if check fails (fallback)
-                setHasVoted(true);
-                setAccessChecked(true);
-            }
-        }
-
         async function fetchData() {
             if (!session?.user?.id) return;
 
             try {
                 const eventData = await getEvent(resolvedParams.id);
                 setEvent(eventData as EventDetails);
+
+                // User membership status will be checked using event data
+                // in the conditional rendering logic
 
                 if (eventData) {
                     try {
@@ -150,7 +131,6 @@ export default function ResultsPage({
             }
         }
 
-        checkAccess();
         fetchData();
     }, [resolvedParams.id, router, session, status]);
 
@@ -165,34 +145,9 @@ export default function ResultsPage({
         );
     }
 
-    // If user hasn't voted, show access denied message
-    if (accessChecked && !hasVoted && event) {
-        return (
-            <Card className="bg-gray-900">
-                <CardHeader>
-                    <CardTitle className="text-xl font-bold">
-                        Access Denied
-                    </CardTitle>
-                    <CardDescription>
-                        You need to vote in this election before viewing the
-                        results.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center space-y-4 p-6">
-                    <AlertCircle className="h-16 w-16 text-yellow-500" />
-                    <p className="text-center text-lg font-medium">
-                        Please cast your vote to see the results
-                    </p>
-                    <Link
-                        href={`/user/elections/${resolvedParams.id}/vote`}
-                        className="mt-4 rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
-                    >
-                        Go to Voting Page
-                    </Link>
-                </CardContent>
-            </Card>
-        );
-    }
+    // Allow viewing results for all elections:
+    // - All users can view results for any election (completed, ongoing, upcoming, cancelled)
+    // - No voting requirement to view results
 
     // If event not found
     if (!event) {

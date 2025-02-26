@@ -16,6 +16,7 @@ interface EventWithClub {
     status: 'ONGOING' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED';
     club: {
         name: string;
+        image: string;
     };
 }
 
@@ -108,13 +109,13 @@ function EventCard({ event }: { event: EventWithClub }) {
             <div className="p-5">
                 <div className="mb-4 flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-blue-500/20 p-2">
+                        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-blue-500/20">
                             <Image
-                                src="/images/logo.svg"
+                                src={event.club.image || '/images/logo.svg'}
                                 alt={event.club.name}
-                                width={24}
-                                height={24}
-                                className="h-full w-full object-contain"
+                                width={40}
+                                height={40}
+                                className="h-full w-full rounded-full object-cover"
                             />
                         </div>
                         <div>

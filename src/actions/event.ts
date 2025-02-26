@@ -12,6 +12,7 @@ export async function getEvents() {
                 club: {
                     select: {
                         name: true,
+                        image: true,
                     },
                 },
             },
@@ -33,7 +34,9 @@ export async function getEvent(id: string) {
             include: {
                 club: {
                     select: {
+                        id: true,
                         name: true,
+                        members: true,
                     },
                 },
             },
@@ -265,6 +268,9 @@ export async function submitVote(
         // 1. Check if the event exists and is ongoing
         const event = await db.event.findUnique({
             where: { id: eventId },
+            include: {
+                club: true,
+            },
         });
 
         if (!event) {
@@ -273,6 +279,11 @@ export async function submitVote(
 
         if (event.status !== 'ONGOING') {
             throw new Error('Voting is only allowed for ongoing events');
+        }
+
+        // Check if user is a member of the club
+        if (!event.club.members.includes(userId)) {
+            throw new Error('You must be a member of this club to vote');
         }
 
         // 2. Check if the candidate exists and is part of this event
@@ -608,5 +619,30 @@ export async function determineEventWinner(
     } catch (error) {
         console.error('Failed to determine event winner:', error);
         return { success: false, error: 'Failed to determine event winner' };
+    }
+}
+
+// Function to check if a user is a member of the club hosting an event
+export async function isUserClubMember(eventId: string, userId: string) {
+    try {
+        const event = await db.event.findUnique({
+            where: { id: eventId },
+            include: {
+                club: {
+                    select: {
+                        members: true,
+                    },
+                },
+            },
+        });
+
+        if (!event || !event.club) {
+            return false;
+        }
+
+        return event.club.members.includes(userId);
+    } catch (error) {
+        console.error('Failed to check club membership:', error);
+        return false;
     }
 }
