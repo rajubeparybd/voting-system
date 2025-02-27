@@ -23,12 +23,14 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en" className="dark" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} from-background via-background/95 to-background/90 min-h-screen bg-gradient-to-br antialiased`}
                 suppressHydrationWarning
             >
-                {children}
+                <div className="relative z-10 flex min-h-screen flex-col">
+                    {children}
+                </div>
             </body>
         </html>
     );

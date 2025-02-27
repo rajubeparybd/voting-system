@@ -14,8 +14,8 @@ export default async function AdminLayout({
     }
 
     return (
-        <div className="min-h-screen bg-gray-900">
-            <div className="flex">
+        <div className="from-background via-background/95 to-background/90 min-h-screen bg-gradient-to-br">
+            <div className="flex shadow-md">
                 <AdminSidebar />
                 <AdminBody session={session}>{children}</AdminBody>
             </div>
