@@ -7,7 +7,7 @@ import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
 import { db } from './prisma';
 import { AuthSchema } from '@/validation/auth';
-import { hashPassword } from './bcrypt';
+import { comparePassword } from './bcrypt';
 
 const adapter = PrismaAdapter(db);
 
@@ -26,11 +26,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const user = await db.user.findFirst({
                     where: {
                         email: validatedCredentials.email,
-                        password: await hashPassword(
-                            validatedCredentials.password
-                        ),
                     },
                 });
+
+                if (user && user.password) {
+                    const isValidPassword = await comparePassword(
+                        validatedCredentials.password,
+                        user.password
+                    );
+
+                    if (!isValidPassword) {
+                        throw new Error('Invalid credentials.');
+                    }
+                }
 
                 if (!user) {
                     throw new Error('Invalid credentials.');
