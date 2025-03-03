@@ -28,7 +28,7 @@ const SignUp = () => {
                         <div className="text-center text-sm">
                             Already have an account?{' '}
                             <a
-                                href="/auth/signup"
+                                href="/auth/signin"
                                 className="underline underline-offset-4"
                             >
                                 Sign In
