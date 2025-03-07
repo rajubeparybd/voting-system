@@ -2,8 +2,14 @@ import { SignupForm } from '@/components/signup-form';
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { GithubSignIn } from '@/components/github-signin';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
-const SignUp = () => {
+const SignUp = async () => {
+    const session = await auth();
+    if (session) redirect('/');
+
     return (
         <div className="grid min-h-screen place-items-center">
             <Card className="w-full max-w-lg overflow-hidden p-0">
@@ -27,12 +33,12 @@ const SignUp = () => {
                         {/* </div> */}
                         <div className="text-center text-sm">
                             Already have an account?{' '}
-                            <a
+                            <Link
                                 href="/auth/signin"
                                 className="underline underline-offset-4"
                             >
                                 Sign In
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </CardContent>

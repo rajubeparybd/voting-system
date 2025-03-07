@@ -15,6 +15,7 @@ const signUp = async (formData: FormData) => {
                     name: validatedData.name,
                     email: validatedData.email.toLocaleLowerCase(),
                     password: await hashPassword(validatedData.password),
+                    role: ['USER'],
                 },
             });
         },

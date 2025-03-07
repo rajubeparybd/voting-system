@@ -1,15 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { signUp } from '@/actions/signup';
 import { cn } from '@/lib/utils';
 
 export async function SignupForm({ className }: React.ComponentProps<'div'>) {
-    const session = await auth();
-    if (session) redirect('/');
-
     return (
         <form
             className={cn('flex flex-col gap-6', className)}
