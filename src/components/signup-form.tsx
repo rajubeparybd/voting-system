@@ -29,6 +29,17 @@ export async function SignupForm({ className }: React.ComponentProps<'div'>) {
             </div>
 
             <div className="grid gap-3">
+                <Label htmlFor="studentId">Student ID</Label>
+                <Input
+                    id="studentId"
+                    name="studentId"
+                    type="number"
+                    placeholder="22234103301"
+                    required
+                />
+            </div>
+
+            <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
                 <Input
                     id="email"

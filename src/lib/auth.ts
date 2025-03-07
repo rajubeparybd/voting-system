@@ -4,7 +4,6 @@ import { encode as defaultEncode } from 'next-auth/jwt';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import GitHub from 'next-auth/providers/github';
 import { db } from './prisma';
 import { AuthSchema } from '@/validation/auth';
 import { comparePassword } from './bcrypt';
@@ -14,10 +13,9 @@ const adapter = PrismaAdapter(db);
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter,
     providers: [
-        GitHub,
         Credentials({
             credentials: {
-                email: {},
+                studentId: {},
                 password: {},
             },
             authorize: async credentials => {
@@ -25,7 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                 const user = await db.user.findFirst({
                     where: {
-                        email: validatedCredentials.email,
+                        studentId: validatedCredentials.studentId,
                     },
                 });
 

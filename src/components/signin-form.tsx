@@ -19,12 +19,12 @@ export async function SigninForm({ className }: React.ComponentProps<'div'>) {
             }}
         >
             <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="studentId">Student ID</Label>
                 <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="jhon@example.com"
+                    id="studentId"
+                    name="studentId"
+                    type="number"
+                    placeholder="22234103301"
                     required
                 />
             </div>

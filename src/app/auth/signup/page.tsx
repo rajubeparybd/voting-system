@@ -1,7 +1,6 @@
 import { SignupForm } from '@/components/signup-form';
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { GithubSignIn } from '@/components/github-signin';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -24,13 +23,6 @@ const SignUp = async () => {
 
                         <SignupForm />
 
-                        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                            <span className="bg-background text-muted-foreground relative z-10 px-2">
-                                Or continue with
-                            </span>
-                        </div>
-                        <GithubSignIn />
-                        {/* </div> */}
                         <div className="text-center text-sm">
                             Already have an account?{' '}
                             <Link

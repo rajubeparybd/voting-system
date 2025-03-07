@@ -4,12 +4,12 @@ import { executeAction } from '@/lib/executeAction';
 const signIn = async (formData: FormData) => {
     return executeAction({
         actionFn: async () => {
-            const email = formData.get('email')?.toString();
+            const studentId = formData.get('studentId')?.toString();
             const password = formData.get('password')?.toString();
-            if (!email || !password) {
-                throw new Error('Email and password are required.');
+            if (!studentId || !password) {
+                throw new Error('Student ID and password are required.');
             }
-            return await PrismaSignIn('credentials', { email, password });
+            return await PrismaSignIn('credentials', { studentId, password });
         },
         successMessage: 'Signed in successfully',
     });
