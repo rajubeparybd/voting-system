@@ -2,13 +2,14 @@ import { v4 as uuid } from 'uuid';
 import { encode as defaultEncode } from 'next-auth/jwt';
 
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import NextAuth from 'next-auth';
+import NextAuth, { User } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { db } from './prisma';
 import { AuthSchema } from '@/validation/auth';
 import { comparePassword } from './bcrypt';
+import { Adapter } from 'next-auth/adapters';
 
-const adapter = PrismaAdapter(db);
+const adapter = PrismaAdapter(db) as Adapter;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter,
@@ -42,7 +43,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     throw new Error('Invalid credentials.');
                 }
 
-                return user;
+                return user as User;
             },
         }),
     ],
