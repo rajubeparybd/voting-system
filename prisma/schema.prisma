@@ -76,6 +76,7 @@ model Club {
   status      ClubStatus @default(ACTIVE)
   open_date   DateTime?
   members     String[]   @db.ObjectId
+  positions   String[]   @default([])
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }

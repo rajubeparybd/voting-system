@@ -29,6 +29,7 @@ interface Club {
     status: ClubStatus;
     open_date: Date | null;
     members: string[];
+    positions: string[];
 }
 
 interface RawClub extends Omit<Club, 'status'> {
@@ -127,6 +128,7 @@ export default function ClubsPage() {
                             <TableHead>Status</TableHead>
                             <TableHead>Open Date</TableHead>
                             <TableHead>Members</TableHead>
+                            <TableHead>Positions</TableHead>
                             <TableHead className="text-right">
                                 Actions
                             </TableHead>
@@ -165,6 +167,20 @@ export default function ClubsPage() {
                                 </TableCell>
                                 <TableCell className="text-gray-400">
                                     {club.members.length}
+                                </TableCell>
+                                <TableCell className="text-gray-400">
+                                    <div className="flex flex-wrap gap-1">
+                                        {(club.positions || []).map(
+                                            (position, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="rounded-full bg-gray-700 px-2 py-1 text-xs"
+                                                >
+                                                    {position}
+                                                </span>
+                                            )
+                                        )}
+                                    </div>
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-2">

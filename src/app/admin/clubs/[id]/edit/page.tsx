@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { PositionsInput } from '@/components/club/PositionsInput';
 import {
     Form,
     FormControl,
@@ -44,6 +45,7 @@ export default function EditClubPage({ params }: { params: { id: string } }) {
             image: '',
             status: 'ACTIVE' as ClubStatus,
             open_date: '',
+            positions: [],
         },
     });
 
@@ -63,6 +65,7 @@ export default function EditClubPage({ params }: { params: { id: string } }) {
                         image: club.image,
                         status: club.status as ClubStatus,
                         open_date: formattedDate,
+                        positions: club.positions || [],
                     });
                 } else {
                     toast.error('Club not found');
@@ -237,6 +240,25 @@ export default function EditClubPage({ params }: { params: { id: string } }) {
                                         </FormLabel>
                                         <FormControl>
                                             <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage className="text-red-400" />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="positions"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-gray-200">
+                                            Positions
+                                        </FormLabel>
+                                        <FormControl>
+                                            <PositionsInput
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                            />
                                         </FormControl>
                                         <FormMessage className="text-red-400" />
                                     </FormItem>

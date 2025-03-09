@@ -10,6 +10,18 @@ export async function getClubs() {
             orderBy: {
                 createdAt: 'desc',
             },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                image: true,
+                status: true,
+                open_date: true,
+                members: true,
+                positions: true,
+                createdAt: true,
+                updatedAt: true,
+            },
         });
 
         return clubs;
@@ -24,6 +36,18 @@ export async function getClub(id: string) {
         const club = await db.club.findUnique({
             where: {
                 id,
+            },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                image: true,
+                status: true,
+                open_date: true,
+                members: true,
+                positions: true,
+                createdAt: true,
+                updatedAt: true,
             },
         });
 
@@ -47,6 +71,7 @@ export async function createClub(data: ClubFormValues) {
                 status: data.status,
                 open_date: openDate,
                 members: [],
+                positions: data.positions || [],
             },
         });
 
@@ -73,6 +98,7 @@ export async function updateClub(id: string, data: ClubFormValues) {
                 image: data.image,
                 status: data.status,
                 open_date: openDate,
+                positions: data.positions || [],
             },
         });
 
