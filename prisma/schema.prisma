@@ -61,3 +61,21 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+enum ClubStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+model Club {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  image       String
+  status      ClubStatus @default(ACTIVE)
+  open_date   DateTime?
+  members     String[]   @db.ObjectId
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
