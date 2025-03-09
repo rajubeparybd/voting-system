@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,7 +33,12 @@ import { ArrowLeft } from 'lucide-react';
 const STATUS_OPTIONS = ['ACTIVE', 'INACTIVE', 'PENDING'] as const;
 type ClubStatus = (typeof STATUS_OPTIONS)[number];
 
-export default function EditClubPage({ params }: { params: { id: string } }) {
+export default function EditClubPage({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    const resolvedParams = use(params);
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +58,7 @@ export default function EditClubPage({ params }: { params: { id: string } }) {
     useEffect(() => {
         const fetchClub = async () => {
             try {
-                const club = await getClub(params.id);
+                const club = await getClub(resolvedParams.id);
                 if (club) {
                     // Format the date for the input field (YYYY-MM-DD)
                     const formattedDate = club.open_date
@@ -81,12 +87,12 @@ export default function EditClubPage({ params }: { params: { id: string } }) {
         };
 
         fetchClub();
-    }, [params.id, form, router]);
+    }, [resolvedParams.id, form, router]);
 
     const onSubmit = async (values: ClubFormValues) => {
         setIsSubmitting(true);
         try {
-            await updateClub(params.id, values);
+            await updateClub(resolvedParams.id, values);
             toast.success('Club updated successfully');
             router.push('/admin/clubs');
         } catch (error) {
