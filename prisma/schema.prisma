@@ -140,6 +140,7 @@ model Event {
   candidates  String[]   @db.ObjectId // Store candidate user IDs that are approved
   eventDate   DateTime
   status      EventStatus @default(UPCOMING)
+  winnerId    String?    @db.ObjectId // Winner candidate ID
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   votes       Vote[]     // Relation to votes

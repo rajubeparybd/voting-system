@@ -509,3 +509,104 @@ export async function hasUserVoted(eventId: string, userId: string) {
         return false;
     }
 }
+
+// Define result types for winner functions
+interface WinnerUpdateResult {
+    success: boolean;
+    event?: { id: string; winnerId: string | null; status: string } | null;
+    error?: string;
+}
+
+interface WinnerDeterminationResult {
+    success: boolean;
+    event?: { id: string; winnerId: string | null; status: string } | null;
+    error?: string;
+    tie?: boolean;
+    tiedCandidates?: Array<{
+        id: string;
+        name: string | null;
+        email?: string | null;
+        image?: string | null;
+        studentId?: string | null;
+        department?: string | null;
+    } | null>;
+}
+
+// Function to update the winner status of an event
+export async function updateEventWinner(
+    eventId: string,
+    winnerId: string
+): Promise<WinnerUpdateResult> {
+    try {
+        // Update the event with the winner ID and set status to COMPLETED
+        const event = await db.event.update({
+            where: { id: eventId },
+            data: {
+                winnerId: winnerId,
+                status: 'COMPLETED', // Automatically set status to COMPLETED
+            },
+        });
+        revalidatePath('/admin/events');
+        revalidatePath(`/admin/events/${eventId}`);
+        revalidatePath('/user/elections');
+        revalidatePath(`/user/elections/${eventId}/results`);
+        return { success: true, event };
+    } catch (error) {
+        console.error('Failed to update event winner:', error);
+        return { success: false, error: 'Failed to update event winner' };
+    }
+}
+
+// Function to automatically determine the winner based on votes
+export async function determineEventWinner(
+    eventId: string
+): Promise<WinnerDeterminationResult> {
+    try {
+        const event = await db.event.findUnique({
+            where: { id: eventId },
+        });
+
+        if (!event) {
+            return { success: false, error: 'Event not found' };
+        }
+
+        const voteResults = await getVoteResults(eventId);
+
+        if (
+            !voteResults ||
+            !voteResults.results ||
+            voteResults.results.length === 0
+        ) {
+            return { success: false, error: 'No vote results found' };
+        }
+
+        // Sort the results by vote count (descending)
+        const sortedResults = [...voteResults.results].sort(
+            (a, b) => b.votes - a.votes
+        );
+
+        // Check if there's a clear winner (no tie)
+        const topVotes = sortedResults[0].votes;
+        const tiedCandidates = sortedResults.filter(
+            result => result.votes === topVotes
+        );
+
+        if (tiedCandidates.length === 1 && tiedCandidates[0].candidate) {
+            // There's a clear winner, update the event
+            const winnerId = tiedCandidates[0].candidate.id;
+            return await updateEventWinner(eventId, winnerId);
+        } else {
+            // There's a tie, return the tied candidates for manual selection
+            return {
+                success: false,
+                tie: true,
+                tiedCandidates: tiedCandidates
+                    .map(result => result.candidate)
+                    .filter(Boolean),
+            };
+        }
+    } catch (error) {
+        console.error('Failed to determine event winner:', error);
+        return { success: false, error: 'Failed to determine event winner' };
+    }
+}

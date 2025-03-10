@@ -53,6 +53,7 @@ interface EventDetails {
     eventDate: Date;
     status: 'ONGOING' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED';
     candidateDetails: Candidate[];
+    winnerId?: string | null;
     club: {
         name: string;
     };
@@ -251,7 +252,7 @@ export default function ResultsPage({
     const statusInfo = getStatusBadge(event.status);
 
     return (
-        <Card className="bg-gray-900">
+        <Card className="mb-4 bg-gray-900">
             <CardHeader>
                 <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                     <CardTitle className="text-xl font-bold">
@@ -310,38 +311,58 @@ export default function ResultsPage({
                 ) : voteResults ? (
                     <div className="space-y-6">
                         {/* Show victory trophy for completed elections */}
-                        {event.status === 'COMPLETED' &&
-                            voteResults.results.length > 0 && (
-                                <div className="mb-6 flex flex-col items-center justify-center">
-                                    <Trophy className="mb-2 h-16 w-16 text-yellow-500" />
-                                    <p className="text-xl font-bold">
-                                        Election Results Finalized
-                                    </p>
-                                    {voteResults.results[0]?.candidate && (
-                                        <div className="mt-2 rounded-lg bg-yellow-50 p-3 text-center">
-                                            <p className="text-sm text-yellow-700">
-                                                Winner:{' '}
-                                                <span className="font-bold">
-                                                    {
-                                                        voteResults.results[0]
-                                                            .candidate.name
-                                                    }
-                                                </span>
-                                            </p>
-                                            <p className="text-xs text-yellow-600">
-                                                with{' '}
-                                                {voteResults.results[0].votes}{' '}
-                                                votes (
+                        {event.status === 'COMPLETED' && (
+                            <div className="mb-6 flex flex-col items-center justify-center">
+                                <Trophy className="mb-2 h-16 w-16 text-yellow-500" />
+                                <p className="text-xl font-bold">
+                                    Election Results Finalized
+                                </p>
+                                {event.winnerId &&
+                                voteResults.results.some(
+                                    r => r.candidate?.id === event.winnerId
+                                ) ? (
+                                    <div className="mt-2 rounded-lg bg-yellow-50 p-3 text-center">
+                                        <p className="text-sm text-yellow-700">
+                                            Winner:{' '}
+                                            <span className="font-bold">
                                                 {
-                                                    voteResults.results[0]
-                                                        .percentage
+                                                    voteResults.results.find(
+                                                        r =>
+                                                            r.candidate?.id ===
+                                                            event.winnerId
+                                                    )?.candidate?.name
                                                 }
-                                                %)
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                            </span>
+                                        </p>
+                                        <p className="text-xs text-yellow-600">
+                                            with{' '}
+                                            {
+                                                voteResults.results.find(
+                                                    r =>
+                                                        r.candidate?.id ===
+                                                        event.winnerId
+                                                )?.votes
+                                            }{' '}
+                                            votes (
+                                            {
+                                                voteResults.results.find(
+                                                    r =>
+                                                        r.candidate?.id ===
+                                                        event.winnerId
+                                                )?.percentage
+                                            }
+                                            %)
+                                        </p>
+                                    </div>
+                                ) : voteResults.results.length > 0 ? (
+                                    <div className="mt-2 rounded-lg bg-yellow-50 p-3 text-center">
+                                        <p className="text-sm text-yellow-700">
+                                            Winner not officially selected yet
+                                        </p>
+                                    </div>
+                                ) : null}
+                            </div>
+                        )}
 
                         <div className="mb-6 text-center">
                             <p className="text-lg">
@@ -381,10 +402,12 @@ export default function ResultsPage({
                                                         <User2 className="h-6 w-6 text-gray-500" />
                                                     </div>
                                                 )}
-                                                {/* Show trophy for the winner in completed elections */}
-                                                {index === 0 &&
-                                                    event.status ===
-                                                        'COMPLETED' && (
+                                                {/* Show trophy for winner in completed elections */}
+                                                {event.status === 'COMPLETED' &&
+                                                    event.winnerId &&
+                                                    event.winnerId ===
+                                                        result.candidate
+                                                            ?.id && (
                                                         <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500">
                                                             <Trophy className="h-3.5 w-3.5 text-white" />
                                                         </div>
@@ -423,7 +446,7 @@ export default function ResultsPage({
                                         </div>
                                         <div className="mb-4 h-2.5 w-full rounded-full bg-gray-200">
                                             <div
-                                                className={`h-2.5 rounded-full ${index === 0 && event.status === 'COMPLETED' ? 'bg-yellow-500' : 'bg-blue-600'}`}
+                                                className={`h-2.5 rounded-full ${event.status === 'COMPLETED' && event.winnerId === result.candidate?.id ? 'bg-yellow-500' : 'bg-blue-600'}`}
                                                 style={{
                                                     width: `${result.percentage}%`,
                                                 }}

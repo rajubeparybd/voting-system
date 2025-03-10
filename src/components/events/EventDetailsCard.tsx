@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Edit, Trash } from 'lucide-react';
+import { ChevronLeft, Edit, Trash, Trophy } from 'lucide-react';
 import EventDeleteDialog from './EventDeleteDialog';
 import EventStatusUpdate from './EventStatusUpdate';
 
@@ -16,6 +16,14 @@ interface EventDetailsCardProps {
         club: {
             name: string;
         };
+        candidateDetails?: Array<{
+            id: string;
+            name: string | null;
+            email: string | null;
+            image: string | null;
+            studentId?: string | null;
+            department?: string | null;
+        }>;
     };
 }
 
@@ -30,6 +38,14 @@ export default function EventDetailsCard({ event }: EventDetailsCardProps) {
     const router = useRouter();
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
+    // Find winner details if applicable
+    const winnerDetails =
+        event.winnerId && event.candidateDetails
+            ? event.candidateDetails.find(
+                  candidate => candidate.id === event.winnerId
+              )
+            : null;
+
     return (
         <>
             <Button
@@ -43,9 +59,17 @@ export default function EventDetailsCard({ event }: EventDetailsCardProps) {
 
             <Card className="border-gray-800 bg-gray-900">
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-xl font-bold text-white">
-                        {event.title}
-                    </CardTitle>
+                    <div className="flex items-center space-x-2">
+                        <CardTitle className="text-xl font-bold text-white">
+                            {event.title}
+                        </CardTitle>
+                        {event.status === 'COMPLETED' && event.winnerId && (
+                            <Badge className="flex items-center bg-yellow-600 px-2 py-1">
+                                <Trophy className="mr-1 h-3 w-3" />
+                                Winner Selected
+                            </Badge>
+                        )}
+                    </div>
                     <div className="flex items-center space-x-2">
                         <EventStatusUpdate
                             eventId={event.id}
@@ -100,6 +124,31 @@ export default function EventDetailsCard({ event }: EventDetailsCardProps) {
                         <p className="text-gray-400">Description</p>
                         <p className="mt-1 text-white">{event.description}</p>
                     </div>
+                    {winnerDetails && event.status === 'COMPLETED' && (
+                        <div className="my-4 rounded-lg border border-yellow-600/30 bg-yellow-800/20 p-4">
+                            <div className="flex items-center">
+                                <Trophy className="mr-2 h-5 w-5 text-yellow-500" />
+                                <h3 className="text-lg font-semibold text-white">
+                                    Event Winner
+                                </h3>
+                            </div>
+                            <div className="mt-2 text-white">
+                                <p className="font-medium">
+                                    {winnerDetails.name || 'Anonymous'}
+                                </p>
+                                {winnerDetails.studentId && (
+                                    <p className="text-sm text-gray-300">
+                                        ID: {winnerDetails.studentId}
+                                    </p>
+                                )}
+                                {winnerDetails.department && (
+                                    <p className="text-sm text-gray-300">
+                                        Department: {winnerDetails.department}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     <div className="text-sm text-gray-400">
                         <p>
                             Created:{' '}

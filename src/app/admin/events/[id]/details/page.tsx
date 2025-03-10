@@ -19,6 +19,8 @@ export default function EventDetailsPage({ params }: EventDetailsPageProps) {
         notFound();
     }
 
+    const isCompleted = event.status === 'COMPLETED';
+
     console.log('Event data in details page:', event);
 
     return (
@@ -43,6 +45,8 @@ export default function EventDetailsPage({ params }: EventDetailsPageProps) {
                     <EventDetailsCard event={event} />
                     <EventCandidatesList
                         candidates={event.candidateDetails ?? []}
+                        winnerId={event.winnerId}
+                        isCompleted={isCompleted}
                     />
                 </div>
             </Suspense>
