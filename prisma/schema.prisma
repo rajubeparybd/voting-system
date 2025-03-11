@@ -51,6 +51,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  applications  Application[]
 }
 
 model VerificationToken {
@@ -79,4 +80,43 @@ model Club {
   positions   String[]   @default([])
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  nominations Nomination[]
+}
+
+enum NominationStatus {
+  ACTIVE
+  INACTIVE
+  CLOSED
+}
+
+model Nomination {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  clubId      String           @db.ObjectId
+  club        Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  position    String
+  description String
+  status      NominationStatus @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  applications Application[]
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Application {
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  nominationId String            @db.ObjectId
+  nomination   Nomination        @relation(fields: [nominationId], references: [id], onDelete: Cascade)
+  userId       String            @db.ObjectId
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statement    String
+  status       ApplicationStatus @default(PENDING)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 }
