@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { Providers } from './providers';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -29,7 +30,7 @@ export default function RootLayout({
                 suppressHydrationWarning
             >
                 <div className="relative z-10 flex min-h-screen flex-col">
-                    {children}
+                    <Providers>{children}</Providers>
                 </div>
             </body>
         </html>
