@@ -7,7 +7,14 @@ import Link from 'next/link';
 
 const SignIn = async () => {
     const session = await auth();
-    if (session) redirect('/');
+    if (session?.user) {
+        const userRole = session.user.role;
+        if (Array.isArray(userRole) && userRole.includes('ADMIN')) {
+            redirect('/admin/dashboard');
+        } else {
+            redirect('/user/dashboard');
+        }
+    }
 
     return (
         <div className="grid min-h-screen place-items-center">
