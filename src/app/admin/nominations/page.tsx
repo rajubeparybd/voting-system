@@ -58,12 +58,13 @@ interface Nomination {
     status: NominationStatus;
     startDate: Date;
     endDate: Date;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     applications: any[];
     createdAt: Date;
     updatedAt: Date;
 }
 
-const STATUS_OPTIONS: NominationStatus[] = ['ACTIVE', 'INACTIVE', 'CLOSED'];
+// const STATUS_OPTIONS: NominationStatus[] = ['ACTIVE', 'INACTIVE', 'CLOSED'];
 
 export default function NominationsPage() {
     const [nominations, setNominations] = useState<Nomination[]>([]);

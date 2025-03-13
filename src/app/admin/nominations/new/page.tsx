@@ -69,7 +69,7 @@ export default function NewNominationPage() {
                 const clubsData = await getClubs();
                 // Only include clubs that have positions defined
                 const clubsWithPositions = clubsData.filter(
-                    (club: any) => club.positions && club.positions.length > 0
+                    (club: Club) => club.positions && club.positions.length > 0
                 );
                 setClubs(clubsWithPositions as Club[]);
             } catch (error) {
@@ -102,9 +102,13 @@ export default function NewNominationPage() {
             await createNomination(values);
             toast.success('Nomination created successfully');
             router.push('/admin/nominations');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to create nomination:', error);
-            toast.error(error.message || 'Failed to create nomination');
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to create nomination'
+            );
         } finally {
             setIsSubmitting(false);
         }

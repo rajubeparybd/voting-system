@@ -50,27 +50,6 @@ export const ImageUpload = ({
         []
     );
 
-    const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            const file = e.dataTransfer.files[0];
-            handleFile(file);
-        }
-    }, []);
-
-    const handleFileInputChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            if (e.target.files && e.target.files.length > 0) {
-                const file = e.target.files[0];
-                handleFile(file);
-            }
-        },
-        []
-    );
-
     const handleFile = useCallback(
         (file: File) => {
             // Check if file is an image
@@ -99,6 +78,30 @@ export const ImageUpload = ({
             reader.readAsDataURL(file);
         },
         [onFileChange]
+    );
+
+    const handleDrop = useCallback(
+        (e: React.DragEvent<HTMLDivElement>) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(false);
+
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                handleFile(file);
+            }
+        },
+        [handleFile]
+    );
+
+    const handleFileInputChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (e.target.files && e.target.files.length > 0) {
+                const file = e.target.files[0];
+                handleFile(file);
+            }
+        },
+        [handleFile]
     );
 
     const handleRemove = useCallback(() => {
@@ -135,7 +138,7 @@ export const ImageUpload = ({
                         </div>
                         {/* Use a regular img tag for data URLs and Image component for http URLs */}
                         {preview.startsWith('data:') ? (
-                            <img
+                            <Image
                                 className="h-full w-full object-cover"
                                 alt="Club image"
                                 src={preview}

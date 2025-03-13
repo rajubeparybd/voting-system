@@ -53,7 +53,7 @@ export default function EditNominationPage({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [clubs, setClubs] = useState<Club[]>([]);
-    const [selectedClub, setSelectedClub] = useState<Club | null>(null);
+    // const [selectedClub, setSelectedClub] = useState<Club | null>(null);
     const [positions, setPositions] = useState<string[]>([]);
 
     const form = useForm<NominationFormValues>({
@@ -74,7 +74,7 @@ export default function EditNominationPage({
                 // Fetch clubs
                 const clubsData = await getClubs();
                 const clubsWithPositions = clubsData.filter(
-                    (club: any) => club.positions && club.positions.length > 0
+                    (club: Club) => club.positions && club.positions.length > 0
                 );
                 setClubs(clubsWithPositions as Club[]);
 
@@ -101,10 +101,10 @@ export default function EditNominationPage({
 
                     // Set selected club and available positions
                     const club = clubsWithPositions.find(
-                        (c: any) => c.id === nomination.clubId
+                        (c: Club) => c.id === nomination.clubId
                     );
                     if (club) {
-                        setSelectedClub(club as Club);
+                        // setSelectedClub(club as Club);
                         setPositions(club.positions);
                     }
                 } else {
@@ -127,12 +127,12 @@ export default function EditNominationPage({
     const handleClubChange = (clubId: string) => {
         const club = clubs.find(c => c.id === clubId);
         if (club) {
-            setSelectedClub(club);
+            // setSelectedClub(club);
             setPositions(club.positions);
             // Reset position field when club changes
             form.setValue('position', '');
         } else {
-            setSelectedClub(null);
+            // setSelectedClub(null);
             setPositions([]);
         }
     };
@@ -144,9 +144,13 @@ export default function EditNominationPage({
             await updateNomination(resolvedParams.id, values);
             toast.success('Nomination updated successfully');
             router.push('/admin/nominations');
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to update nomination:', error);
-            toast.error(error.message || 'Failed to update nomination');
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to update nomination'
+            );
         } finally {
             setIsSubmitting(false);
         }

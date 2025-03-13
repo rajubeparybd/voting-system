@@ -59,7 +59,7 @@ export default function CandidatesPage({
             try {
                 const nominationData = await getNomination(resolvedParams.id);
                 if (nominationData) {
-                    setNomination(nominationData as Nomination);
+                    setNomination(nominationData as unknown as Nomination);
                 } else {
                     toast.error('Nomination not found');
                     router.push('/admin/nominations');
