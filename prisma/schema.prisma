@@ -142,4 +142,17 @@ model Event {
   status      EventStatus @default(UPCOMING)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  votes       Vote[]     // Relation to votes
+}
+
+// Model to store votes for candidates in events
+model Vote {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId     String   @db.ObjectId
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId      String   @db.ObjectId // The user who voted
+  candidateId String   @db.ObjectId // The candidate who received the vote
+  createdAt   DateTime @default(now())
+
+  @@unique([eventId, userId]) // Ensure each user can only vote once per event
 }

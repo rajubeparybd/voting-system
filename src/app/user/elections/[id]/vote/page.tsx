@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getEvent } from '@/actions/event';
+import { getEvent, submitVote, hasUserVoted } from '@/actions/event';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
-import { ChevronLeft, Check } from 'lucide-react';
+import { ChevronLeft, Check, AlertCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { use } from 'react';
 
 interface Candidate {
@@ -39,49 +40,121 @@ export default function VotePage({
 }) {
     const resolvedParams = use(params);
     const router = useRouter();
+    const { data: session, status } = useSession();
     const [event, setEvent] = useState<EventDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedCandidate, setSelectedCandidate] = useState<string | null>(
         null
     );
-    const [voting, setVoting] = useState(false);
     const [voteSuccess, setVoteSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [hasAlreadyVoted, setHasAlreadyVoted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     useEffect(() => {
         async function fetchEventDetails() {
             try {
+                if (status === 'loading') {
+                    return;
+                }
+
+                if (!session?.user?.id) {
+                    router.push('/auth/signin');
+                    return;
+                }
+
                 const eventData = await getEvent(resolvedParams.id);
                 setEvent(eventData as EventDetails);
+
+                // Check if user has already voted
+                try {
+                    const userVoted = await hasUserVoted(
+                        resolvedParams.id,
+                        session.user.id
+                    );
+                    setHasAlreadyVoted(userVoted);
+
+                    if (userVoted) {
+                        setError('You have already voted in this election');
+                    }
+                } catch (checkError) {
+                    console.error('Error checking vote status:', checkError);
+                    // Continue showing the voting interface even if check fails
+                }
             } catch (error) {
                 console.error('Error fetching event details:', error);
+                setError('Failed to load event details');
             } finally {
                 setLoading(false);
             }
         }
 
         fetchEventDetails();
-    }, [resolvedParams.id]);
+    }, [resolvedParams.id, router, session, status]);
 
     const handleVote = async () => {
-        if (!selectedCandidate) return;
+        if (!selectedCandidate) {
+            setError('Please select a candidate to vote');
+            return;
+        }
 
-        setVoting(true);
+        if (!event || !session?.user?.id) {
+            setError('Session expired or event not found');
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError(null);
+        setSaveError(null);
 
         try {
-            // Here you would add the actual API call to submit the vote
-            // For now, we'll simulate a successful vote with a timeout
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const result = await submitVote(
+                event.id,
+                selectedCandidate,
+                session.user.id
+            );
 
-            setVoteSuccess(true);
+            if (result.success) {
+                setHasAlreadyVoted(true);
+                setVoteSuccess(true);
 
-            // Redirect to a success page or back to elections after a brief delay
-            setTimeout(() => {
-                router.push('/user/elections');
-            }, 2000);
+                // Show success message for 2 seconds before redirecting
+                setTimeout(() => {
+                    router.push(`/user/elections/${event.id}/results`);
+                }, 2000);
+            } else {
+                if (result.error?.includes('already voted')) {
+                    setHasAlreadyVoted(true);
+                } else {
+                    setSaveError(
+                        result.error ||
+                            'Failed to submit vote. Please try again.'
+                    );
+                }
+            }
         } catch (error) {
             console.error('Error submitting vote:', error);
+            // Handle specific error when the Vote model is not available
+            if (
+                error instanceof Error &&
+                error.message.includes('Vote model')
+            ) {
+                setSaveError(
+                    'The voting system is currently being updated. Please try again in a few minutes.'
+                );
+            } else if (
+                error instanceof Error &&
+                error.message.includes('already voted')
+            ) {
+                setHasAlreadyVoted(true);
+            } else {
+                setSaveError(
+                    'An unexpected error occurred. Please try again later.'
+                );
+            }
         } finally {
-            setVoting(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -138,6 +211,34 @@ export default function VotePage({
         );
     }
 
+    if (hasAlreadyVoted) {
+        return (
+            <div className="container mx-auto py-8">
+                <div className="rounded-xl bg-blue-500/10 p-6 text-center">
+                    <h2 className="mb-2 text-xl font-semibold text-white">
+                        You&apos;ve Already Voted
+                    </h2>
+                    <p className="mb-4 text-gray-400">
+                        You have already cast your vote in this election. Each
+                        user can only vote once.
+                    </p>
+                    <div className="mt-6 flex justify-center gap-4">
+                        <Link href={`/user/elections/${event.id}/results`}>
+                            <button className="rounded-lg bg-[#F8D9AE] px-4 py-2 font-semibold text-[#262626]">
+                                View Results
+                            </button>
+                        </Link>
+                        <Link href="/user/elections">
+                            <button className="rounded-lg border border-gray-600 px-4 py-2 font-semibold text-gray-300 hover:bg-gray-800">
+                                Return to Elections
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto space-y-6 pb-8">
             <Link
@@ -177,7 +278,8 @@ export default function VotePage({
                         Vote Submitted Successfully!
                     </h2>
                     <p className="text-gray-400">
-                        Thank you for participating in this election.
+                        Thank you for participating in this election. You will
+                        be redirected to the results page shortly.
                     </p>
                 </div>
             ) : (
@@ -185,6 +287,20 @@ export default function VotePage({
                     <h2 className="text-xl font-semibold text-white">
                         Select a Candidate
                     </h2>
+
+                    {error && (
+                        <div className="flex items-center gap-2 rounded-lg bg-red-500/10 p-4 text-red-400">
+                            <AlertCircle className="h-5 w-5" />
+                            <p>{error}</p>
+                        </div>
+                    )}
+
+                    {saveError && (
+                        <div className="flex items-center gap-2 rounded-lg bg-red-500/10 p-4 text-red-400">
+                            <AlertCircle className="h-5 w-5" />
+                            <p>{saveError}</p>
+                        </div>
+                    )}
 
                     {event.candidateDetails.length === 0 ? (
                         <div className="rounded-xl bg-[#1e2028] p-6 text-center">
@@ -280,14 +396,22 @@ export default function VotePage({
                     <div className="flex justify-center pt-4">
                         <button
                             className={`rounded-lg px-8 py-3 font-semibold transition-colors ${
-                                selectedCandidate
+                                selectedCandidate &&
+                                !error &&
+                                !saveError &&
+                                !isSubmitting
                                     ? 'bg-[#F8D9AE] text-[#262626] hover:bg-[#f0c48b]'
                                     : 'cursor-not-allowed bg-gray-700 text-gray-400'
                             }`}
-                            disabled={!selectedCandidate || voting}
+                            disabled={
+                                !selectedCandidate ||
+                                !!error ||
+                                !!saveError ||
+                                isSubmitting
+                            }
                             onClick={handleVote}
                         >
-                            {voting ? 'Submitting...' : 'Submit Vote'}
+                            {isSubmitting ? 'Submitting...' : 'Submit Vote'}
                         </button>
                     </div>
                 </div>

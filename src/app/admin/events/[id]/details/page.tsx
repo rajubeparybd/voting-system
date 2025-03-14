@@ -3,17 +3,17 @@ import { notFound } from 'next/navigation';
 import { getEvent } from '@/actions/event';
 import EventDetailsCard from '@/components/events/EventDetailsCard';
 import EventCandidatesList from '@/components/events/EventCandidatesList';
+import { use } from 'react';
 
 interface EventDetailsPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export default async function EventDetailsPage({
-    params,
-}: EventDetailsPageProps) {
-    const event = await getEvent(params.id);
+export default function EventDetailsPage({ params }: EventDetailsPageProps) {
+    const resolvedParams = use(params);
+    const event = use(getEvent(resolvedParams.id));
 
     if (!event) {
         notFound();
