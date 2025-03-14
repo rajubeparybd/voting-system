@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Edit, Trash } from 'lucide-react';
-import EventEditDialog from './EventEditDialog';
 import EventDeleteDialog from './EventDeleteDialog';
 import EventStatusUpdate from './EventStatusUpdate';
 
@@ -29,7 +28,6 @@ const statusColors = {
 
 export default function EventDetailsCard({ event }: EventDetailsCardProps) {
     const router = useRouter();
-    const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
     return (
@@ -56,7 +54,9 @@ export default function EventDetailsCard({ event }: EventDetailsCardProps) {
                         <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => setIsEditOpen(true)}
+                            onClick={() =>
+                                router.push(`/admin/events/${event.id}/edit`)
+                            }
                         >
                             <Edit className="h-4 w-4" />
                         </Button>
@@ -112,12 +112,6 @@ export default function EventDetailsCard({ event }: EventDetailsCardProps) {
                     </div>
                 </CardContent>
             </Card>
-
-            <EventEditDialog
-                event={event}
-                open={isEditOpen}
-                onOpenChange={setIsEditOpen}
-            />
 
             <EventDeleteDialog
                 eventId={event.id}

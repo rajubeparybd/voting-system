@@ -167,6 +167,12 @@ interface CandidateUser {
 
 export async function getApprovedCandidates(nominationId: string) {
     try {
+        // Check if nominationId is valid before proceeding
+        if (!nominationId || nominationId.trim() === '') {
+            console.log('Invalid nominationId provided:', nominationId);
+            return [];
+        }
+
         const candidates = await db.application.findMany({
             where: {
                 nominationId,
@@ -198,7 +204,8 @@ export async function getApprovedCandidates(nominationId: string) {
         return mappedCandidates;
     } catch (error) {
         console.error('Failed to fetch approved candidates:', error);
-        throw new Error('Failed to fetch approved candidates');
+        // Return empty array instead of throwing error to prevent page crashes
+        return [];
     }
 }
 
