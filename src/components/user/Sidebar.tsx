@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { FiUser } from 'react-icons/fi';
 import { HiOutlineLogout } from 'react-icons/hi';
 import { MdDashboard, MdOutlineHowToVote } from 'react-icons/md';
-import { BsCalendarEvent } from 'react-icons/bs';
 import { RiTeamLine } from 'react-icons/ri';
 import { BiSupport } from 'react-icons/bi';
 import { GiVote } from 'react-icons/gi';
@@ -108,24 +107,6 @@ export default function Sidebar({ isSidebarOpen }: SidebarProps) {
                         }
                     >
                         Elections
-                    </span>
-                </Link>
-
-                <Link
-                    href="/user/events"
-                    className={`flex items-center gap-3 rounded-xl px-6 py-3 transition-colors ${
-                        isActive('/user/events')
-                            ? 'bg-white text-[#1A1C23]'
-                            : 'text-gray-400 hover:bg-gray-800'
-                    }`}
-                >
-                    <BsCalendarEvent className="text-xl" />
-                    <span
-                        className={
-                            isActive('/user/events') ? 'font-semibold' : ''
-                        }
-                    >
-                        Events
                     </span>
                 </Link>
 
