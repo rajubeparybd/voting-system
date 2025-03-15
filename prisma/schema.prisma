@@ -82,6 +82,7 @@ model Club {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   nominations Nomination[]
+  events      Event[]
 }
 
 enum NominationStatus {
@@ -120,4 +121,25 @@ model Application {
   status       ApplicationStatus @default(PENDING)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model Event {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  clubId      String     @db.ObjectId
+  club        Club       @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  position    String
+  title       String
+  description String
+  candidates  String[]   @db.ObjectId // Store candidate user IDs that are approved
+  eventDate   DateTime
+  status      EventStatus @default(UPCOMING)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
