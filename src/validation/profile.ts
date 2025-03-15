@@ -5,6 +5,18 @@ export const UpdateProfileSchema = z.object({
     email: z.string().email('Invalid email address').optional(),
     studentId: z.string().min(1, 'Student ID is required').optional(),
     department: z.string().min(1).optional(),
+    image: z
+        .string()
+        .optional()
+        .refine(
+            value =>
+                !value ||
+                value === 'pending-upload' ||
+                value.startsWith('http'),
+            {
+                message: 'Invalid image format',
+            }
+        ),
 });
 
 export type UpdateProfileSchemaType = z.infer<typeof UpdateProfileSchema>;

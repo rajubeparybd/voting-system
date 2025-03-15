@@ -9,7 +9,10 @@ interface MobileHeaderProps {
     onMenuClick: () => void;
 }
 
-export default function MobileHeader({ onMenuClick }: MobileHeaderProps) {
+export default function MobileHeader({
+    session,
+    onMenuClick,
+}: MobileHeaderProps) {
     return (
         <div className="flex items-center justify-between bg-[#1A1C23] p-4 lg:hidden">
             <button onClick={onMenuClick} className="text-2xl">
@@ -22,11 +25,11 @@ export default function MobileHeader({ onMenuClick }: MobileHeaderProps) {
                 </button>
                 <div className="h-8 w-8 rounded-full bg-blue-500">
                     <Image
-                        src="/images/user.jpg"
+                        src={session?.user?.image || '/images/user.jpg'}
                         alt="Profile"
                         width={32}
                         height={32}
-                        className="rounded-full"
+                        className="rounded-full object-cover"
                     />
                 </div>
             </div>

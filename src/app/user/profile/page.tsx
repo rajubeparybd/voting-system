@@ -2,7 +2,7 @@
 
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { updateProfile } from '@/actions/update-profile';
 import { changePassword } from '@/actions/change-password';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { FiLoader } from 'react-icons/fi';
 import { useFormStatus } from 'react-dom';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 // Submit Buttons as Client Components
 function UpdateProfileButton() {
@@ -69,6 +70,8 @@ interface ValidationError {
 export default function ProfilePage() {
     const { data: session, status } = useSession();
     const router = useRouter();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const imagePreviewRef = useRef<string | null>(null);
     const [feedback, setFeedback] = useState({
         name: '',
         email: '',
@@ -77,6 +80,7 @@ export default function ProfilePage() {
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
+        image: '',
     });
 
     useEffect(() => {
@@ -101,7 +105,14 @@ export default function ProfilePage() {
             email: '',
             studentId: '',
             department: '',
+            image: '',
         }));
+
+        // Add image data to formData if present
+        if (selectedFile && imagePreviewRef.current) {
+            formData.set('image', 'pending-upload');
+            formData.set('imageData', imagePreviewRef.current);
+        }
 
         const result = await updateProfile(formData);
 
@@ -115,6 +126,8 @@ export default function ProfilePage() {
                 setFeedback(prev => ({ ...prev, name: result.message }));
             } else if (result.message.includes('Department')) {
                 setFeedback(prev => ({ ...prev, department: result.message }));
+            } else if (result.message.includes('image')) {
+                setFeedback(prev => ({ ...prev, image: result.message }));
             }
             toast.error(result.message);
         } else {
@@ -201,7 +214,7 @@ export default function ProfilePage() {
 
     return (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Card>
+            <Card className="mb-4 h-fit">
                 <CardHeader>
                     <CardTitle>Profile Information</CardTitle>
                 </CardHeader>
@@ -272,13 +285,51 @@ export default function ProfilePage() {
                                 </p>
                             )}
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="image">Profile Picture</Label>
+                            <input
+                                type="hidden"
+                                name="image"
+                                value={session?.user?.image || ''}
+                            />
+                            <ImageUpload
+                                value={session?.user?.image || ''}
+                                onChange={value => {
+                                    const imageInput = document.querySelector(
+                                        'input[name="image"]'
+                                    ) as HTMLInputElement;
+                                    if (imageInput) {
+                                        imageInput.value = value;
+                                    }
+                                }}
+                                onFileChange={file => {
+                                    setSelectedFile(file);
+                                    if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = e => {
+                                            const result = e.target
+                                                ?.result as string;
+                                            imagePreviewRef.current = result;
+                                        };
+                                        reader.readAsDataURL(file);
+                                    } else {
+                                        imagePreviewRef.current = null;
+                                    }
+                                }}
+                            />
+                            {feedback.image && (
+                                <p className="text-sm text-red-500">
+                                    {feedback.image}
+                                </p>
+                            )}
+                        </div>
 
                         <UpdateProfileButton />
                     </form>
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="mb-4 h-fit">
                 <CardHeader>
                     <CardTitle>Change Password</CardTitle>
                 </CardHeader>

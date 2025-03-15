@@ -29,11 +29,11 @@ export default function MainHeader({ session }: MainHeaderProps) {
                 <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-blue-500">
                         <Image
-                            src="/images/user.jpg"
+                            src={session?.user?.image || '/images/user.jpg'}
                             alt="Profile"
                             width={40}
                             height={40}
-                            className="rounded-full"
+                            className="rounded-full object-cover"
                         />
                     </div>
                     <div>

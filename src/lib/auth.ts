@@ -17,6 +17,7 @@ declare module 'next-auth' {
         name?: string | null;
         email?: string | null;
         department?: string | null;
+        image?: string | null;
     }
     interface Session {
         user: {
@@ -26,6 +27,7 @@ declare module 'next-auth' {
             name?: string | null;
             email?: string | null;
             department?: string | null;
+            image?: string | null;
         };
     }
 }
@@ -35,6 +37,7 @@ declare module 'next-auth/jwt' {
         role?: Role[];
         studentId?: string | null;
         department?: string | null;
+        image?: string | null;
     }
 }
 
@@ -84,6 +87,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         studentId: user.studentId,
                         department: user.department,
                         role: user.role,
+                        image: user.image,
                     };
                 } catch (error) {
                     console.error('Auth error:', error);
@@ -98,6 +102,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.role = user.role;
                 token.studentId = user.studentId;
                 token.department = user.department;
+                token.image = user.image;
             }
             return token;
         },
@@ -113,6 +118,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.id = token.sub || '';
                 session.user.studentId = token.studentId;
                 session.user.department = token.department;
+                session.user.image = token.image;
             }
             return session;
         },
