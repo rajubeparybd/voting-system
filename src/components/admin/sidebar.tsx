@@ -45,13 +45,6 @@ export function AdminSidebar() {
                     <span>Candidates</span>
                 </Link>
                 <Link
-                    href="/admin/applications"
-                    className="flex items-center space-x-2 rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
-                >
-                    <FaClipboardList className="h-5 w-5" />
-                    <span>Applications</span>
-                </Link>
-                <Link
                     href="/admin/events"
                     className="flex items-center space-x-2 rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
                 >
