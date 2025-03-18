@@ -16,17 +16,27 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { getNomination } from '@/actions/nomination';
+import { getNomination, updateCandidateStatus } from '@/actions/nomination';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 interface Candidate {
     id: string;
-    userId: string;
     nominationId: string;
-    name: string;
-    email: string;
-    manifesto: string;
+    statement: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     createdAt: Date;
+    user: {
+        studentId: string;
+        name: string;
+        email: string;
+        department: string;
+    };
 }
 
 interface Nomination {
@@ -79,11 +89,23 @@ export default function CandidatesPage({
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'APPROVED':
-                return <Badge variant="success">Approved</Badge>;
+                return (
+                    <Badge className="bg-green-600 text-white hover:bg-green-700">
+                        Approved
+                    </Badge>
+                );
             case 'REJECTED':
-                return <Badge variant="destructive">Rejected</Badge>;
+                return (
+                    <Badge className="bg-red-600 text-white hover:bg-red-700">
+                        Rejected
+                    </Badge>
+                );
             case 'PENDING':
-                return <Badge variant="outline">Pending</Badge>;
+                return (
+                    <Badge className="bg-yellow-600 text-white hover:bg-yellow-700">
+                        Pending
+                    </Badge>
+                );
             default:
                 return <Badge variant="outline">Unknown</Badge>;
         }
@@ -152,32 +174,95 @@ export default function CandidatesPage({
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>Student ID</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Email</TableHead>
-                                <TableHead>Manifesto</TableHead>
+                                <TableHead>Department</TableHead>
+                                <TableHead>Statement</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Applied On</TableHead>
+                                <TableHead>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {nomination?.applications.map(candidate => (
                                 <TableRow key={candidate.id}>
                                     <TableCell className="font-medium text-gray-200">
-                                        {candidate.name}
+                                        {candidate.user.studentId}
                                     </TableCell>
                                     <TableCell className="text-gray-400">
-                                        {candidate.email}
+                                        {candidate.user.name}
                                     </TableCell>
-                                    <TableCell className="max-w-xs truncate text-gray-400">
-                                        {candidate.manifesto}
+                                    <TableCell className="text-gray-400">
+                                        {candidate.user.email}
+                                    </TableCell>
+                                    <TableCell className="text-gray-400">
+                                        {candidate.user.department}
+                                    </TableCell>
+                                    <TableCell className="max-w-xl whitespace-pre-wrap text-gray-400">
+                                        {candidate.statement}
                                     </TableCell>
                                     <TableCell>
-                                        {getStatusBadge(candidate.status)}
+                                        <div className="flex items-center gap-2">
+                                            {getStatusBadge(candidate.status)}
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-gray-400">
                                         {new Date(
                                             candidate.createdAt
                                         ).toLocaleDateString()}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Select
+                                            defaultValue={candidate.status}
+                                            onValueChange={async value => {
+                                                try {
+                                                    await updateCandidateStatus(
+                                                        candidate.id,
+                                                        value as
+                                                            | 'PENDING'
+                                                            | 'APPROVED'
+                                                            | 'REJECTED'
+                                                    );
+                                                    toast.success(
+                                                        'Status updated successfully'
+                                                    );
+                                                    // Refresh the nomination data
+                                                    const nominationData =
+                                                        await getNomination(
+                                                            resolvedParams.id
+                                                        );
+                                                    if (nominationData) {
+                                                        setNomination(
+                                                            nominationData as unknown as Nomination
+                                                        );
+                                                    }
+                                                } catch (error) {
+                                                    console.error(
+                                                        'Failed to update status:',
+                                                        error
+                                                    );
+                                                    toast.error(
+                                                        'Failed to update status'
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="w-[130px]">
+                                                <SelectValue placeholder="Select status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="PENDING">
+                                                    Pending
+                                                </SelectItem>
+                                                <SelectItem value="APPROVED">
+                                                    Approve
+                                                </SelectItem>
+                                                <SelectItem value="REJECTED">
+                                                    Reject
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </TableCell>
                                 </TableRow>
                             ))}

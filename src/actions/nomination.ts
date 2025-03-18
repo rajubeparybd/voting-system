@@ -32,7 +32,18 @@ export async function getNomination(id: string) {
             },
             include: {
                 club: true,
-                applications: true,
+                applications: {
+                    include: {
+                        user: {
+                            select: {
+                                studentId: true,
+                                name: true,
+                                email: true,
+                                department: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -258,7 +269,7 @@ export async function updateCandidateStatus(
             },
         });
 
-        // Get the nomination ID to revalidate the correct path
+        // Get the nomination ID to revalidate the correct paths
         const nomination = await db.nomination.findFirst({
             where: {
                 applications: {
@@ -273,7 +284,9 @@ export async function updateCandidateStatus(
         });
 
         if (nomination) {
+            // Revalidate both admin and user routes
             revalidatePath(`/admin/nominations/${nomination.id}/candidates`);
+            revalidatePath('/user/candidate');
         }
 
         return updatedCandidate;

@@ -2,7 +2,6 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin/sidebar';
 import { AdminBody } from '@/components/admin/body';
-import Footer from '@/components/ui/Footer';
 
 export default async function AdminLayout({
     children,
@@ -20,7 +19,6 @@ export default async function AdminLayout({
                 <AdminSidebar />
                 <div className="flex flex-1 flex-col">
                     <AdminBody session={session}>{children}</AdminBody>
-                    <Footer />
                 </div>
             </div>
         </div>
