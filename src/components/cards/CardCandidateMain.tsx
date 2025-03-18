@@ -5,7 +5,7 @@ import { User, Club, Nomination, Application } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { becomeCandidate } from '@/actions/candidate';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
     Dialog,
@@ -211,12 +211,11 @@ export function CardCandidateMain({
     nominations,
     applications,
 }: CardCandidateMainProps) {
-    const [isLoading, setIsLoading] = useState(false);
     const isCandidate = user.role?.includes('CANDIDATE');
+    const hasJoinedClubs = clubs.length > 0;
 
     async function handleApplyAsCandidate() {
         try {
-            setIsLoading(true);
             await becomeCandidate();
             toast.success('You are now a candidate!');
         } catch (error) {
@@ -225,51 +224,64 @@ export function CardCandidateMain({
                     ? error.message
                     : 'Failed to apply as candidate'
             );
-        } finally {
-            setIsLoading(false);
         }
     }
 
-    const activeNominations = nominations.filter(
-        nomination => nomination.status === 'ACTIVE'
-    );
+    if (!isCandidate && !hasJoinedClubs) {
+        return (
+            <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-6">
+                <div className="flex items-start gap-4">
+                    <div className="rounded-full bg-yellow-500/20 p-2">
+                        <AlertCircle className="h-6 w-6 text-yellow-500" />
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-lg font-medium text-yellow-500">
+                            Club Membership Required
+                        </h3>
+                        <p className="text-sm text-white/70">
+                            You need to be a member of at least one club to
+                            become a candidate. Please join a club first before
+                            applying for candidacy.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
             {!isCandidate && (
                 <CardReadyToLead
                     clubs={clubs}
-                    isLoading={isLoading}
+                    isLoading={false}
                     onApply={handleApplyAsCandidate}
                 />
             )}
 
             {isCandidate && (
-                <>
-                    <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-600/10 to-emerald-700/10 p-8 shadow-lg backdrop-blur-xl">
-                        <div className="relative z-10 flex items-start gap-4">
-                            <div className="rounded-xl bg-emerald-500/20 p-4 backdrop-blur-sm">
-                                <Sparkles className="h-6 w-6 text-emerald-400" />
-                            </div>
-                            <div className="space-y-3">
-                                <h2 className="text-2xl font-semibold text-white/90">
-                                    Welcome to Your Candidate Dashboard
-                                </h2>
-                                <p className="text-white/70">
-                                    Congratulations on taking the first step
-                                    towards leadership! Browse and apply for
-                                    available positions below.
-                                </p>
-                            </div>
-                        </div>
+                <div className="flex items-center gap-4 rounded-xl border border-white/10 bg-slate-800/50 p-6">
+                    <div className="rounded-full bg-blue-500/20 p-2">
+                        <Sparkles className="h-6 w-6 text-blue-500" />
                     </div>
+                    <div>
+                        <h3 className="text-lg font-medium text-white/90">
+                            Welcome to Your Candidate Dashboard
+                        </h3>
+                        <p className="text-sm text-white/70">
+                            You can now apply for available positions in your
+                            clubs
+                        </p>
+                    </div>
+                </div>
+            )}
 
-                    <NominationApplicationForm
-                        clubs={clubs}
-                        nominations={activeNominations}
-                        applications={applications}
-                    />
-                </>
+            {isCandidate && (
+                <NominationApplicationForm
+                    clubs={clubs}
+                    nominations={nominations}
+                    applications={applications}
+                />
             )}
         </div>
     );
