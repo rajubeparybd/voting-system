@@ -121,7 +121,7 @@ function NominationApplicationForm({
             </div>
 
             {applications.length > 0 && (
-                <div className="space-y-4">
+                <div className="mb-10 space-y-4">
                     <div className="flex items-center gap-2 text-lg font-semibold text-white/90">
                         Your Applications
                         <Badge variant="default">
