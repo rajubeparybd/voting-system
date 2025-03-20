@@ -3,6 +3,7 @@
 import MainHeader from '@/components/user/MainHeader';
 import MobileHeader from '@/components/user/MobileHeader';
 import Sidebar from '@/components/user/Sidebar';
+import Footer from '@/components/ui/Footer';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -36,18 +37,19 @@ export default function UserLayout({
     }
 
     return (
-        <div className="min-h-screen bg-[#292D3E] text-white">
+        <div className="flex min-h-screen flex-col bg-[#292D3E] text-white">
             <MobileHeader
                 session={session}
                 onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
             />
 
-            <div className="flex flex-col lg:flex-row">
+            <div className="flex flex-1 flex-col lg:flex-row">
                 <Sidebar isSidebarOpen={isSidebarOpen} />
 
-                <main className="flex-1 p-4 lg:p-8">
+                <main className="flex flex-1 flex-col p-4 !pb-0 lg:p-8">
                     <MainHeader session={session} />
                     {children}
+                    <Footer />
                 </main>
             </div>
 
