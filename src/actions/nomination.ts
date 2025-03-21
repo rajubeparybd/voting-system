@@ -1,10 +1,7 @@
 'use server';
 
 import { db } from '@/lib/prisma';
-import {
-    NominationFormValues,
-    ApplicationFormValues,
-} from '@/validation/nomination';
+import { NominationFormValues } from '@/validation/nomination';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 
@@ -165,43 +162,53 @@ export async function deleteNomination(id: string) {
     }
 }
 
-export async function applyForNomination(data: ApplicationFormValues) {
+interface ApplyForNominationParams {
+    nominationId: string;
+    statement: string;
+}
+
+export async function applyForNomination({
+    nominationId,
+    statement,
+}: ApplyForNominationParams) {
     try {
-        // Get the current user
         const session = await auth();
-        if (!session?.user?.id) {
+
+        if (!session) {
             throw new Error('Unauthorized');
         }
 
-        // Get the nomination and related club
+        // Check if nomination exists and is active
         const nomination = await db.nomination.findUnique({
-            where: { id: data.nominationId },
-            include: { club: true },
+            where: { id: nominationId },
+            include: {
+                club: true,
+            },
         });
 
         if (!nomination) {
             throw new Error('Nomination not found');
         }
 
-        // Verify that the user is a member of the club
-        if (!nomination.club.members.includes(session.user.id)) {
-            throw new Error('You must be a member of the club to apply');
+        if (nomination.status !== 'ACTIVE') {
+            throw new Error(
+                'This nomination is no longer accepting applications'
+            );
         }
 
-        // Verify that the user has the CANDIDATE role
-        const user = await db.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
+        // Check if user is a member of the club
+        const club = await db.club.findUnique({
+            where: { id: nomination.clubId },
         });
 
-        if (!user?.role?.includes('CANDIDATE')) {
-            throw new Error('Only candidates can apply for nominations');
+        if (!club?.members.includes(session.user.id)) {
+            throw new Error('You must be a member of this club to apply');
         }
 
-        // Check if the user has already applied
+        // Check if user has already applied
         const existingApplication = await db.application.findFirst({
             where: {
-                nominationId: data.nominationId,
+                nominationId,
                 userId: session.user.id,
             },
         });
@@ -210,19 +217,22 @@ export async function applyForNomination(data: ApplicationFormValues) {
             throw new Error('You have already applied for this nomination');
         }
 
+        // Create the application
         const application = await db.application.create({
             data: {
-                nominationId: data.nominationId,
+                nominationId,
                 userId: session.user.id,
-                statement: data.statement,
+                statement,
             },
         });
 
-        revalidatePath('/nominations');
+        revalidatePath('/user/candidate');
         return application;
-    } catch (error) {
-        console.error('Failed to create application:', error);
-        throw error;
+    } catch (error: unknown) {
+        console.error('Failed to apply for nomination:', error);
+        throw error instanceof Error
+            ? error
+            : new Error('Failed to apply for nomination');
     }
 }
 

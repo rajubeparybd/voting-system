@@ -10,6 +10,7 @@ import { MdDashboard, MdOutlineHowToVote } from 'react-icons/md';
 import { BsCalendarEvent } from 'react-icons/bs';
 import { RiTeamLine } from 'react-icons/ri';
 import { BiSupport } from 'react-icons/bi';
+import { GiVote } from 'react-icons/gi';
 
 interface SidebarProps {
     isSidebarOpen: boolean;
@@ -71,6 +72,24 @@ export default function Sidebar({ isSidebarOpen }: SidebarProps) {
                         }
                     >
                         Profile
+                    </span>
+                </Link>
+
+                <Link
+                    href="/user/candidate"
+                    className={`flex items-center gap-3 rounded-xl px-6 py-3 transition-colors ${
+                        isActive('/user/candidate')
+                            ? 'bg-white text-[#1A1C23]'
+                            : 'text-gray-400 hover:bg-gray-800'
+                    }`}
+                >
+                    <GiVote className="text-xl" />
+                    <span
+                        className={
+                            isActive('/user/candidate') ? 'font-semibold' : ''
+                        }
+                    >
+                        Candidate
                     </span>
                 </Link>
 
