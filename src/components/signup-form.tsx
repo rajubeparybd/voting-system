@@ -125,6 +125,20 @@ export function SignupForm({ className }: React.ComponentProps<'div'>) {
             </div>
 
             <div className="grid gap-3">
+                <Label htmlFor="department">Department</Label>
+                <Input
+                    id="department"
+                    name="department"
+                    type="text"
+                    placeholder="Computer Science"
+                    required
+                    disabled={isLoading}
+                    className="transition-opacity duration-200"
+                    style={{ opacity: isLoading ? 0.7 : 1 }}
+                />
+            </div>
+
+            <div className="grid gap-3">
                 <Label htmlFor="password">Password</Label>
                 <Input
                     id="password"

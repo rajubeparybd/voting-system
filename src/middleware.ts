@@ -7,6 +7,7 @@ interface CustomToken {
     role?: Role[];
     name?: string;
     email?: string;
+    department?: string | null;
     sub?: string;
     iat?: number;
     exp?: number;

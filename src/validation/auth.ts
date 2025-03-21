@@ -10,6 +10,7 @@ type AuthSchemaType = z.infer<typeof AuthSchema>;
 const SignupSchema = AuthSchema.extend({
     name: z.string().min(3),
     email: z.string().email(),
+    department: z.string().min(1),
 });
 
 type SignupSchemaType = z.infer<typeof SignupSchema>;

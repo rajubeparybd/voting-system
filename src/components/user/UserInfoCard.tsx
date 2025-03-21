@@ -10,9 +10,9 @@ interface UserInfoCardProps {
 export default function UserInfoCard({ session }: UserInfoCardProps) {
     // Extract session data into variables
     const name = session?.user?.name || 'Guest';
-    const id = session?.user?.id || 'N/A';
+    const id = session?.user?.studentId || 'N/A';
     const email = session?.user?.email || 'N/A';
-    const department = 'CSE';
+    const department = session?.user?.department || 'N/A';
     const date = new Date().toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',

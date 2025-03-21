@@ -4,6 +4,7 @@ export const UpdateProfileSchema = z.object({
     name: z.string().min(3, 'Name must be at least 3 characters'),
     email: z.string().email('Invalid email address').optional(),
     studentId: z.string().min(1, 'Student ID is required').optional(),
+    department: z.string().min(1).optional(),
 });
 
 export type UpdateProfileSchemaType = z.infer<typeof UpdateProfileSchema>;

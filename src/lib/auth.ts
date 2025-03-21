@@ -16,6 +16,7 @@ declare module 'next-auth' {
         studentId?: string | null;
         name?: string | null;
         email?: string | null;
+        department?: string | null;
     }
     interface Session {
         user: {
@@ -24,6 +25,7 @@ declare module 'next-auth' {
             studentId?: string | null;
             name?: string | null;
             email?: string | null;
+            department?: string | null;
         };
     }
 }
@@ -32,6 +34,7 @@ declare module 'next-auth/jwt' {
     interface JWT {
         role?: Role[];
         studentId?: string | null;
+        department?: string | null;
     }
 }
 
@@ -79,6 +82,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         name: user.name,
                         email: user.email,
                         studentId: user.studentId,
+                        department: user.department,
                         role: user.role,
                     };
                 } catch (error) {
@@ -93,6 +97,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (user) {
                 token.role = user.role;
                 token.studentId = user.studentId;
+                token.department = user.department;
             }
             return token;
         },
@@ -107,6 +112,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.role = token.role || [];
                 session.user.id = token.sub || '';
                 session.user.studentId = token.studentId;
+                session.user.department = token.department;
             }
             return session;
         },

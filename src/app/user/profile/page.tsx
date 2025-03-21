@@ -73,6 +73,7 @@ export default function ProfilePage() {
         name: '',
         email: '',
         studentId: '',
+        department: '',
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
@@ -99,6 +100,7 @@ export default function ProfilePage() {
             name: '',
             email: '',
             studentId: '',
+            department: '',
         }));
 
         const result = await updateProfile(formData);
@@ -111,6 +113,8 @@ export default function ProfilePage() {
                 setFeedback(prev => ({ ...prev, studentId: result.message }));
             } else if (result.message.includes('Name')) {
                 setFeedback(prev => ({ ...prev, name: result.message }));
+            } else if (result.message.includes('Department')) {
+                setFeedback(prev => ({ ...prev, department: result.message }));
             }
             toast.error(result.message);
         } else {
@@ -249,6 +253,22 @@ export default function ProfilePage() {
                             {feedback.studentId && (
                                 <p className="text-sm text-red-500">
                                     {feedback.studentId}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="department">Department</Label>
+                            <Input
+                                id="department"
+                                name="department"
+                                defaultValue={session?.user?.department || ''}
+                                placeholder="Enter your department"
+                                className="bg-[#1F2937] text-white"
+                            />
+                            {feedback.department && (
+                                <p className="text-sm text-red-500">
+                                    {feedback.department}
                                 </p>
                             )}
                         </div>

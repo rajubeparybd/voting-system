@@ -8,6 +8,7 @@ declare module 'next-auth' {
             name?: string | null;
             email?: string | null;
             role?: Role;
+            department?: string | null;
         };
     }
 
@@ -16,6 +17,7 @@ declare module 'next-auth' {
         name?: string | null;
         email?: string | null;
         studentId?: string | null;
+        department?: string | null;
         role: Role[];
     }
 }
@@ -32,6 +34,7 @@ declare module 'next-auth/adapters' {
         name?: string | null;
         email?: string | null;
         studentId?: string | null;
+        department?: string | null;
         role: Role[];
     }
 }

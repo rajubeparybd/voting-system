@@ -16,11 +16,13 @@ export async function updateProfile(formData: FormData) {
             const name = formData.get('name');
             const email = formData.get('email');
             const studentId = formData.get('studentId');
+            const department = formData.get('department');
 
             const validatedData = UpdateProfileSchema.parse({
                 name,
                 email,
                 studentId,
+                department,
             });
 
             // Check if email is already taken by another user
@@ -63,6 +65,7 @@ export async function updateProfile(formData: FormData) {
                     name: validatedData.name,
                     email: validatedData.email?.toLowerCase(),
                     studentId: validatedData.studentId,
+                    department: validatedData.department,
                 },
             });
         },
