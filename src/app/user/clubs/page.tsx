@@ -1,10 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { getActiveClubs, joinClub } from '@/actions/club';
 import { useSession } from 'next-auth/react';
+import { getActiveClubs, joinClub } from '@/actions/club';
+import Image from 'next/image';
 import { toast } from 'sonner';
 
 interface Club {
@@ -16,7 +15,7 @@ interface Club {
     open_date: Date | null;
 }
 
-function CardClubMembership({
+function CardClub({
     club,
     userId,
     onJoinSuccess,
@@ -38,7 +37,7 @@ function CardClubMembership({
             setIsJoining(true);
             await joinClub(club.id, userId);
             toast.success(`Successfully joined ${club.name}`);
-            onJoinSuccess(); // Call the callback to refresh data
+            onJoinSuccess();
         } catch (error) {
             toast.error(
                 error instanceof Error ? error.message : 'Failed to join club'
@@ -87,17 +86,18 @@ function CardClubMembership({
     );
 }
 
-export default function ClubMembership() {
+export default function ClubsPage() {
     const { data: session } = useSession();
     const [clubs, setClubs] = useState<Club[]>([]);
     const [loading, setLoading] = useState(true);
 
     const loadClubs = async () => {
         try {
-            const activeClubs = await getActiveClubs(2);
+            const activeClubs = await getActiveClubs();
             setClubs(activeClubs);
         } catch (error) {
             console.error('Failed to load clubs:', error);
+            toast.error('Failed to load clubs');
         } finally {
             setLoading(false);
         }
@@ -109,14 +109,18 @@ export default function ClubMembership() {
 
     if (loading) {
         return (
-            <div className="rounded-2xl bg-[#191B22] p-4 lg:col-span-8 lg:p-6">
-                <div className="mb-6 flex items-center justify-between">
-                    <h2 className="font-poppins text-xl font-semibold text-white">
-                        Club Membership
-                    </h2>
+            <div className="container mx-auto px-4 py-8">
+                <div className="mb-8">
+                    <h1 className="font-poppins text-2xl font-bold text-white lg:text-3xl">
+                        Available Clubs
+                    </h1>
+                    <p className="font-poppins mt-2 text-gray-400">
+                        Join clubs that match your interests and connect with
+                        like-minded people
+                    </p>
                 </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
-                    {[1, 2].map(i => (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {[1, 2, 3, 4].map(i => (
                         <div
                             key={i}
                             className="h-[300px] animate-pulse rounded-2xl bg-[#252834]"
@@ -128,21 +132,19 @@ export default function ClubMembership() {
     }
 
     return (
-        <div className="rounded-2xl bg-[#191B22] p-4 lg:col-span-8 lg:p-6">
-            <div className="mb-6 flex items-center justify-between">
-                <h2 className="font-poppins text-xl font-semibold text-white">
-                    Club Membership
-                </h2>
-                <Link
-                    href="/user/clubs"
-                    className="font-poppins text-lg text-white transition-colors hover:text-gray-300"
-                >
-                    See all
-                </Link>
+        <div className="container mx-auto px-4 py-8">
+            <div className="mb-8">
+                <h1 className="font-poppins text-2xl font-bold text-white lg:text-3xl">
+                    Available Clubs
+                </h1>
+                <p className="font-poppins mt-2 text-gray-400">
+                    Join clubs that match your interests and connect with
+                    like-minded people
+                </p>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
-                {clubs.slice(0, 2).map(club => (
-                    <CardClubMembership
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {clubs.map(club => (
+                    <CardClub
                         key={club.id}
                         club={club}
                         userId={session?.user?.id}

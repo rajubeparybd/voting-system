@@ -125,3 +125,62 @@ export async function deleteClub(id: string) {
         throw new Error('Failed to delete club');
     }
 }
+
+export async function getActiveClubs(limit?: number) {
+    try {
+        const clubs = await db.club.findMany({
+            where: {
+                status: 'ACTIVE',
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            take: limit,
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                image: true,
+                members: true,
+                open_date: true,
+            },
+        });
+
+        return clubs;
+    } catch (error) {
+        console.error('Failed to fetch active clubs:', error);
+        throw new Error('Failed to fetch active clubs');
+    }
+}
+
+export async function joinClub(clubId: string, userId: string) {
+    try {
+        const club = await db.club.findUnique({
+            where: { id: clubId },
+            select: { members: true },
+        });
+
+        if (!club) {
+            throw new Error('Club not found');
+        }
+
+        if (club.members.includes(userId)) {
+            throw new Error('Already a member of this club');
+        }
+
+        await db.club.update({
+            where: { id: clubId },
+            data: {
+                members: {
+                    push: userId,
+                },
+            },
+        });
+
+        revalidatePath('/user/clubs');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to join club:', error);
+        throw error;
+    }
+}
