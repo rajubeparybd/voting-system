@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { updateProfile } from '@/actions/update-profile';
@@ -114,9 +114,14 @@ export default function ProfilePage() {
             }
             toast.error(result.message);
         } else {
-            toast.success('Profile updated successfully');
+            toast.success(
+                'Profile updated successfully. You will be signed out to apply the changes.'
+            );
             // Refresh the session to update the UI
             router.refresh();
+            setTimeout(async () => {
+                await signOut({ redirect: false });
+            }, 1000);
         }
     }
 
