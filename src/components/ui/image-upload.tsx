@@ -139,6 +139,8 @@ export const ImageUpload = ({
                         {/* Use a regular img tag for data URLs and Image component for http URLs */}
                         {preview.startsWith('data:') ? (
                             <Image
+                                width={1000}
+                                height={1000}
                                 className="h-full w-full object-cover"
                                 alt="Club image"
                                 src={preview}
