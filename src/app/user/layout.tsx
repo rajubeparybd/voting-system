@@ -1,8 +1,11 @@
 'use client';
 
+import MainHeader from '@/components/user/MainHeader';
+import MobileHeader from '@/components/user/MobileHeader';
+import Sidebar from '@/components/user/Sidebar';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function UserLayout({
     children,
@@ -11,6 +14,7 @@ export default function UserLayout({
 }) {
     const { data: session, status } = useSession();
     const router = useRouter();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -31,5 +35,29 @@ export default function UserLayout({
         );
     }
 
-    return <>{children}</>;
+    return (
+        <div className="min-h-screen bg-[#292D3E] text-white">
+            <MobileHeader
+                session={session}
+                onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+
+            <div className="flex flex-col lg:flex-row">
+                <Sidebar isSidebarOpen={isSidebarOpen} />
+
+                <main className="flex-1 p-4 lg:p-8">
+                    <MainHeader session={session} />
+                    {children}
+                </main>
+            </div>
+
+            {/* Overlay for mobile sidebar */}
+            {isSidebarOpen && (
+                <div
+                    className="bg-opacity-50 fixed inset-0 z-40 bg-black lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                ></div>
+            )}
+        </div>
+    );
 }
