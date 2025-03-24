@@ -53,7 +53,6 @@ export default function NewClubPage() {
     });
 
     const onSubmit = async (values: ClubFormValues) => {
-        console.log('Form values before submission:', values);
         setIsSubmitting(true);
 
         try {

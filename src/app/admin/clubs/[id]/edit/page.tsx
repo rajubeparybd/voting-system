@@ -94,7 +94,6 @@ export default function EditClubPage({
     }, [resolvedParams.id, form, router]);
 
     const onSubmit = async (values: ClubFormValues) => {
-        console.log('Form values before update:', values);
         setIsSubmitting(true);
 
         try {

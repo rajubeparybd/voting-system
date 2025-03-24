@@ -1,34 +1,70 @@
 import { v4 as uuid } from 'uuid';
 import { encode as defaultEncode } from 'next-auth/jwt';
-
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import NextAuth, { User } from 'next-auth';
+import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { db } from './prisma';
 import { AuthSchema } from '@/validation/auth';
 import { comparePassword } from './bcrypt';
 import { Adapter } from 'next-auth/adapters';
+import { Role } from '@prisma/client';
+
+declare module 'next-auth' {
+    interface User {
+        id: string;
+        role: Role[];
+        studentId?: string | null;
+        name?: string | null;
+        email?: string | null;
+    }
+    interface Session {
+        user: {
+            id: string;
+            role: Role[];
+            studentId?: string | null;
+            name?: string | null;
+            email?: string | null;
+        };
+    }
+}
+
+declare module 'next-auth/jwt' {
+    interface JWT {
+        role: Role[];
+        studentId?: string | null;
+    }
+}
 
 const adapter = PrismaAdapter(db) as Adapter;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter,
+    session: { strategy: 'jwt' },
+    debug: true,
     providers: [
         Credentials({
             credentials: {
-                studentId: {},
-                password: {},
+                studentId: { type: 'text', label: 'Student ID' },
+                password: { type: 'password', label: 'Password' },
             },
-            authorize: async credentials => {
-                const validatedCredentials = AuthSchema.parse(credentials);
+            async authorize(credentials) {
+                try {
+                    const validatedCredentials = AuthSchema.parse(credentials);
 
-                const user = await db.user.findFirst({
-                    where: {
-                        studentId: validatedCredentials.studentId,
-                    },
-                });
+                    const user = await db.user.findFirst({
+                        where: {
+                            studentId: validatedCredentials.studentId,
+                        },
+                    });
 
-                if (user && user.password) {
+                    if (!user) {
+                        throw new Error('Invalid credentials.');
+                    }
+
+                    if (!user.password) {
+                        throw new Error('Invalid credentials.');
+                    }
+
                     const isValidPassword = await comparePassword(
                         validatedCredentials.password,
                         user.password
@@ -37,22 +73,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     if (!isValidPassword) {
                         throw new Error('Invalid credentials.');
                     }
-                }
 
-                if (!user) {
-                    throw new Error('Invalid credentials.');
+                    return {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        studentId: user.studentId,
+                        role: user.role,
+                    };
+                } catch (error) {
+                    console.error('Auth error:', error);
+                    return null;
                 }
-
-                return user as User;
             },
         }),
     ],
     callbacks: {
-        async jwt({ token, account }) {
-            if (account?.provider === 'credentials') {
-                token.credentials = true;
+        async jwt({ token, user }) {
+            if (user) {
+                token.role = user.role;
+                token.studentId = user.studentId;
             }
             return token;
+        },
+        async session({ session, token }) {
+            console.log(
+                'Session Callback - Session:',
+                session,
+                'Token:',
+                token
+            );
+            if (session.user) {
+                session.user.role = token.role || [];
+                session.user.id = token.sub || '';
+                session.user.studentId = token.studentId;
+            }
+            return session;
         },
     },
     jwt: {
@@ -78,5 +134,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
             return defaultEncode(params);
         },
+    },
+    pages: {
+        signIn: '/auth/signin',
+        error: '/auth/error',
+        signOut: '/auth/signout',
     },
 });
