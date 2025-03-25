@@ -23,6 +23,14 @@ import { getClubs, deleteClub } from '@/actions/club';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 // Define the status options and use them in the component
 const STATUS_OPTIONS = ['ACTIVE', 'INACTIVE', 'PENDING'] as const;
@@ -45,9 +53,14 @@ interface RawClub extends Omit<Club, 'status'> {
 
 export default function ClubsPage() {
     const [clubs, setClubs] = useState<Club[]>([]);
+    const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
     const [loading, setLoading] = useState(true);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [clubToDelete, setClubToDelete] = useState<string | null>(null);
+    const [filters, setFilters] = useState({
+        name: '',
+        status: 'all',
+    });
     const router = useRouter();
 
     useEffect(() => {
@@ -59,6 +72,7 @@ export default function ClubsPage() {
                     STATUS_OPTIONS.includes(club.status as ClubStatus)
                 );
                 setClubs(validClubs as Club[]);
+                setFilteredClubs(validClubs as Club[]);
             } catch (error) {
                 console.error('Failed to fetch clubs:', error);
                 toast.error('Failed to load clubs');
@@ -69,6 +83,29 @@ export default function ClubsPage() {
 
         fetchClubs();
     }, []);
+
+    useEffect(() => {
+        let result = [...clubs];
+
+        if (filters.name) {
+            result = result.filter(club =>
+                club.name.toLowerCase().includes(filters.name.toLowerCase())
+            );
+        }
+
+        if (filters.status && filters.status !== 'all') {
+            result = result.filter(club => club.status === filters.status);
+        }
+
+        setFilteredClubs(result);
+    }, [filters, clubs]);
+
+    const handleFilterChange = (key: string, value: string) => {
+        setFilters(prev => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
 
     const handleDeleteClick = (id: string) => {
         setClubToDelete(id);
@@ -149,7 +186,7 @@ export default function ClubsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {clubs.map(club => (
+                        {filteredClubs.map(club => (
                             <TableRow key={club.id}>
                                 <TableCell>
                                     {club.image && (
@@ -247,6 +284,37 @@ export default function ClubsPage() {
                 >
                     <PlusCircle className="mr-2 h-4 w-4" /> Add New Club
                 </Button>
+            </div>
+
+            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <Input
+                        placeholder="Filter by club name..."
+                        value={filters.name}
+                        onChange={e =>
+                            handleFilterChange('name', e.target.value)
+                        }
+                        className="border-gray-700 bg-gray-800 text-gray-200 placeholder:text-gray-500"
+                    />
+                </div>
+                <div>
+                    <Select
+                        value={filters.status}
+                        onValueChange={value =>
+                            handleFilterChange('status', value)
+                        }
+                    >
+                        <SelectTrigger className="border-gray-700 bg-gray-800 text-gray-200">
+                            <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="ACTIVE">Active</SelectItem>
+                            <SelectItem value="INACTIVE">Inactive</SelectItem>
+                            <SelectItem value="PENDING">Pending</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             {renderClubList()}
