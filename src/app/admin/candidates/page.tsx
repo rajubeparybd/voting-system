@@ -12,6 +12,14 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Avatar } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 interface Candidate {
     id: string;
@@ -34,9 +42,25 @@ interface Candidate {
     };
 }
 
+interface Filters {
+    name: string;
+    department: string;
+    club: string;
+}
+
 export default function CandidatesPage() {
     const [candidates, setCandidates] = useState<Candidate[]>([]);
+    const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>(
+        []
+    );
     const [loading, setLoading] = useState(true);
+    const [uniqueDepartments, setUniqueDepartments] = useState<string[]>([]);
+    const [uniqueClubs, setUniqueClubs] = useState<string[]>([]);
+    const [filters, setFilters] = useState<Filters>({
+        name: '',
+        department: 'all',
+        club: 'all',
+    });
 
     useEffect(() => {
         const fetchCandidates = async () => {
@@ -47,6 +71,19 @@ export default function CandidatesPage() {
                 }
                 const data = await response.json();
                 setCandidates(data);
+                setFilteredCandidates(data);
+
+                // Extract unique departments and clubs with proper typing
+                const departments = [
+                    ...new Set(data.map((c: Candidate) => c.user.department)),
+                ] as string[];
+                const clubs = [
+                    ...new Set(
+                        data.map((c: Candidate) => c.nomination.club.name)
+                    ),
+                ] as string[];
+                setUniqueDepartments(departments);
+                setUniqueClubs(clubs);
             } catch (error) {
                 console.error('Failed to fetch candidates:', error);
                 toast.error('Failed to load candidates');
@@ -57,6 +94,35 @@ export default function CandidatesPage() {
 
         fetchCandidates();
     }, []);
+
+    useEffect(() => {
+        if (!candidates) return;
+
+        const filtered = candidates.filter((candidate: Candidate) => {
+            const nameMatch = candidate.user.name
+                .toLowerCase()
+                .includes(filters.name.toLowerCase());
+
+            const departmentMatch =
+                filters.department === 'all' ||
+                candidate.user.department === filters.department;
+
+            const clubMatch =
+                filters.club === 'all' ||
+                candidate.nomination.club.name === filters.club;
+
+            return nameMatch && departmentMatch && clubMatch;
+        });
+
+        setFilteredCandidates(filtered);
+    }, [candidates, filters]);
+
+    const handleFilterChange = (key: string, value: string) => {
+        setFilters(prev => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
 
     if (loading) {
         return (
@@ -72,17 +138,61 @@ export default function CandidatesPage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-10">
-            <div className="mb-8">
-                <h1 className="mb-2 text-3xl font-bold text-white">
-                    Approved Candidates
-                </h1>
-                <p className="text-gray-400">
-                    List of all approved candidates across all nominations
-                </p>
+        <div className="container mx-auto space-y-6 p-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                    <Input
+                        placeholder="Search by name..."
+                        value={filters.name}
+                        onChange={e =>
+                            handleFilterChange('name', e.target.value)
+                        }
+                        className="w-full"
+                    />
+                </div>
+                <div>
+                    <Select
+                        value={filters.department}
+                        onValueChange={value =>
+                            handleFilterChange('department', value)
+                        }
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Filter by department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Departments</SelectItem>
+                            {uniqueDepartments.map(dept => (
+                                <SelectItem key={dept} value={dept}>
+                                    {dept}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Select
+                        value={filters.club}
+                        onValueChange={value =>
+                            handleFilterChange('club', value)
+                        }
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Filter by club" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Clubs</SelectItem>
+                            {uniqueClubs.map(club => (
+                                <SelectItem key={club} value={club}>
+                                    {club}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
-            {candidates.length === 0 ? (
+            {filteredCandidates.length === 0 ? (
                 <div className="flex h-72 flex-col items-center justify-center rounded-lg border border-gray-700 bg-gray-800/50">
                     <div className="mb-4 rounded-full border-2 border-gray-700 p-4">
                         <svg
@@ -115,7 +225,7 @@ export default function CandidatesPage() {
                                 <TableHead>Student ID</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Email</TableHead>
-                                <TableHead>Image</TableHead>
+                                <TableHead>Avatar</TableHead>
                                 <TableHead>Department</TableHead>
                                 <TableHead>Club</TableHead>
                                 <TableHead>Position</TableHead>
@@ -123,7 +233,7 @@ export default function CandidatesPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {candidates.map(candidate => (
+                            {filteredCandidates.map(candidate => (
                                 <TableRow key={candidate.id}>
                                     <TableCell className="font-medium text-gray-200">
                                         {candidate.user.studentId}
