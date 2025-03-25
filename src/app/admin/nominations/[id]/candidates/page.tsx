@@ -24,6 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 interface Candidate {
     id: string;
@@ -63,13 +64,35 @@ export default function CandidatesPage({
     const router = useRouter();
     const [nomination, setNomination] = useState<Nomination | null>(null);
     const [loading, setLoading] = useState(true);
+    const [filteredApplications, setFilteredApplications] = useState<
+        Candidate[]
+    >([]);
+    const [uniqueDepartments, setUniqueDepartments] = useState<string[]>([]);
+    const [filters, setFilters] = useState({
+        department: 'all',
+        status: 'all',
+        name: '',
+    });
 
     useEffect(() => {
         const fetchNomination = async () => {
             try {
                 const nominationData = await getNomination(resolvedParams.id);
                 if (nominationData) {
-                    setNomination(nominationData as unknown as Nomination);
+                    const typedNomination =
+                        nominationData as unknown as Nomination;
+                    setNomination(typedNomination);
+                    setFilteredApplications(typedNomination.applications);
+
+                    // Extract unique departments
+                    const departments = [
+                        ...new Set(
+                            typedNomination.applications.map(
+                                app => app.user.department
+                            )
+                        ),
+                    ];
+                    setUniqueDepartments(departments);
                 } else {
                     toast.error('Nomination not found');
                     router.push('/admin/nominations');
@@ -85,6 +108,42 @@ export default function CandidatesPage({
 
         fetchNomination();
     }, [resolvedParams.id, router]);
+
+    useEffect(() => {
+        if (!nomination) return;
+
+        let result = [...nomination.applications];
+
+        if (filters.department && filters.department !== 'all') {
+            result = result.filter(
+                application =>
+                    application.user.department === filters.department
+            );
+        }
+
+        if (filters.status && filters.status !== 'all') {
+            result = result.filter(
+                application => application.status === filters.status
+            );
+        }
+
+        if (filters.name) {
+            result = result.filter(application =>
+                application.user.name
+                    .toLowerCase()
+                    .includes(filters.name.toLowerCase())
+            );
+        }
+
+        setFilteredApplications(result);
+    }, [filters, nomination]);
+
+    const handleFilterChange = (key: string, value: string) => {
+        setFilters(prev => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -144,7 +203,58 @@ export default function CandidatesPage({
                 </p>
             </div>
 
-            {nomination?.applications.length === 0 ? (
+            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                    <Select
+                        value={filters.department}
+                        onValueChange={value =>
+                            handleFilterChange('department', value)
+                        }
+                    >
+                        <SelectTrigger className="border-gray-700 bg-gray-800 text-gray-200">
+                            <SelectValue placeholder="Filter by department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Departments</SelectItem>
+                            {uniqueDepartments.map(department => (
+                                <SelectItem key={department} value={department}>
+                                    {department}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Select
+                        value={filters.status}
+                        onValueChange={value =>
+                            handleFilterChange('status', value)
+                        }
+                    >
+                        <SelectTrigger className="border-gray-700 bg-gray-800 text-gray-200">
+                            <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="PENDING">Pending</SelectItem>
+                            <SelectItem value="APPROVED">Approved</SelectItem>
+                            <SelectItem value="REJECTED">Rejected</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Input
+                        placeholder="Filter by name..."
+                        value={filters.name}
+                        onChange={e =>
+                            handleFilterChange('name', e.target.value)
+                        }
+                        className="border-gray-700 bg-gray-800 text-gray-200 placeholder:text-gray-500"
+                    />
+                </div>
+            </div>
+
+            {filteredApplications.length === 0 ? (
                 <div className="flex h-72 flex-col items-center justify-center rounded-lg border border-gray-700 bg-gray-800/50">
                     <div className="mb-4 rounded-full border-2 border-gray-700 p-4">
                         <svg
@@ -185,7 +295,7 @@ export default function CandidatesPage({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {nomination?.applications.map(candidate => (
+                            {filteredApplications.map(candidate => (
                                 <TableRow key={candidate.id}>
                                     <TableCell className="font-medium text-gray-200">
                                         {candidate.user.studentId}
