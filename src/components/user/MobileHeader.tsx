@@ -9,10 +9,7 @@ interface MobileHeaderProps {
     onMenuClick: () => void;
 }
 
-export default function MobileHeader({
-    session,
-    onMenuClick,
-}: MobileHeaderProps) {
+export default function MobileHeader({ onMenuClick }: MobileHeaderProps) {
     return (
         <div className="flex items-center justify-between bg-[#1A1C23] p-4 lg:hidden">
             <button onClick={onMenuClick} className="text-2xl">
