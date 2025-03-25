@@ -1,3 +1,5 @@
+'use server';
+
 import { hashPassword } from '@/lib/bcrypt';
 import { executeAction } from '@/lib/executeAction';
 import { db } from '@/lib/prisma';
@@ -16,10 +18,28 @@ const signUp = async (formData: FormData) => {
                 email,
                 password,
             });
+
+            const existingUser = await db.user.findFirst({
+                where: {
+                    OR: [
+                        { email: validatedData.email.toLowerCase() },
+                        { studentId: validatedData.studentId },
+                    ],
+                },
+            });
+
+            if (existingUser) {
+                throw new Error(
+                    existingUser.email === validatedData.email.toLowerCase()
+                        ? 'Email already exists'
+                        : 'Student ID already exists'
+                );
+            }
+
             await db.user.create({
                 data: {
                     name: validatedData.name,
-                    email: validatedData.email.toLocaleLowerCase(),
+                    email: validatedData.email.toLowerCase(),
                     studentId: validatedData.studentId,
                     password: await hashPassword(validatedData.password),
                     role: ['USER'],

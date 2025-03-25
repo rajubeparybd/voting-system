@@ -1,3 +1,5 @@
+'use server';
+
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 
 type Options<T> = {
@@ -23,7 +25,10 @@ const executeAction = async <T>({
 
         return {
             success: false,
-            message: 'An error has occurred during executing the action',
+            message:
+                error instanceof Error
+                    ? error.message
+                    : 'An error has occurred!',
         };
     }
 };
