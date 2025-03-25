@@ -48,7 +48,15 @@ export function SigninForm({ className }: React.ComponentProps<'div'>) {
                 return;
             }
 
-            router.push('/auth/signin');
+            // Check user role and redirect accordingly
+            const response = await fetch('/api/auth/session');
+            const session = await response.json();
+
+            if (session?.user?.role?.includes('ADMIN')) {
+                router.push('/admin/dashboard');
+            } else {
+                router.push('/user/dashboard');
+            }
         } catch (error) {
             console.error('Sign in error:', error);
             setError('An unexpected error occurred. Please try again later.');
