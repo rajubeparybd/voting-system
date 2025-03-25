@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { signUp } from '@/actions/signup';
+import { FiLoader } from 'react-icons/fi';
 
 interface SignupError extends Error {
     message: string;
@@ -145,7 +146,7 @@ export function SignupForm({ className }: React.ComponentProps<'div'>) {
             >
                 {isLoading ? (
                     <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <FiLoader className="mr-2 h-4 w-4 animate-spin" />
                         Signing Up...
                     </>
                 ) : (

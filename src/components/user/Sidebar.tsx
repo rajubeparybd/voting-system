@@ -17,7 +17,7 @@ interface SidebarProps {
 export default function Sidebar({ isSidebarOpen }: SidebarProps) {
     return (
         <aside
-            className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-[#1A1C23] p-6 transition-transform duration-200 ease-in-out lg:static ${
+            className={`fixed inset-y-0 left-0 z-50 min-h-screen w-64 transform bg-[#1A1C23] p-6 transition-transform duration-200 ease-in-out lg:static ${
                 isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
             } lg:translate-x-0`}
         >

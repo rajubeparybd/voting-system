@@ -8,8 +8,9 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FiLoader } from 'react-icons/fi';
 
 export function SigninForm({ className }: React.ComponentProps<'div'>) {
     const router = useRouter();
@@ -125,7 +126,7 @@ export function SigninForm({ className }: React.ComponentProps<'div'>) {
             >
                 {isLoading ? (
                     <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <FiLoader className="mr-2 h-4 w-4 animate-spin" />
                         Signing in...
                     </>
                 ) : (
