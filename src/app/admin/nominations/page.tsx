@@ -41,6 +41,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 type NominationStatus = 'ACTIVE' | 'INACTIVE' | 'CLOSED';
 
@@ -68,6 +76,9 @@ interface Nomination {
 
 export default function NominationsPage() {
     const [nominations, setNominations] = useState<Nomination[]>([]);
+    const [filteredNominations, setFilteredNominations] = useState<
+        Nomination[]
+    >([]);
     const [loading, setLoading] = useState(true);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [closeDialogOpen, setCloseDialogOpen] = useState(false);
@@ -77,6 +88,12 @@ export default function NominationsPage() {
     const [nominationToClose, setNominationToClose] = useState<string | null>(
         null
     );
+    const [uniqueClubs, setUniqueClubs] = useState<string[]>([]);
+    const [filters, setFilters] = useState({
+        club: 'all',
+        position: '',
+        status: 'all',
+    });
     const router = useRouter();
 
     useEffect(() => {
@@ -84,6 +101,13 @@ export default function NominationsPage() {
             try {
                 const nominationsData = await getNominations();
                 setNominations(nominationsData as Nomination[]);
+                setFilteredNominations(nominationsData as Nomination[]);
+
+                // Extract unique clubs
+                const clubs = [
+                    ...new Set(nominationsData.map(n => n.club.name)),
+                ];
+                setUniqueClubs(clubs);
             } catch (error) {
                 console.error('Failed to fetch nominations:', error);
                 toast.error('Failed to load nominations');
@@ -94,6 +118,39 @@ export default function NominationsPage() {
 
         fetchNominations();
     }, []);
+
+    useEffect(() => {
+        let result = [...nominations];
+
+        if (filters.club && filters.club !== 'all') {
+            result = result.filter(
+                nomination => nomination.club.name === filters.club
+            );
+        }
+
+        if (filters.position) {
+            result = result.filter(nomination =>
+                nomination.position
+                    .toLowerCase()
+                    .includes(filters.position.toLowerCase())
+            );
+        }
+
+        if (filters.status && filters.status !== 'all') {
+            result = result.filter(
+                nomination => nomination.status === filters.status
+            );
+        }
+
+        setFilteredNominations(result);
+    }, [filters, nominations]);
+
+    const handleFilterChange = (key: string, value: string) => {
+        setFilters(prev => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
 
     const handleDeleteClick = (id: string) => {
         setNominationToDelete(id);
@@ -229,7 +286,7 @@ export default function NominationsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {nominations.map(nomination => (
+                        {filteredNominations.map(nomination => (
                             <TableRow key={nomination.id}>
                                 <TableCell className="font-medium text-gray-200">
                                     {nomination.club.name}
@@ -346,6 +403,57 @@ export default function NominationsPage() {
                 >
                     <PlusCircle className="mr-2 h-4 w-4" /> Create Nomination
                 </Button>
+            </div>
+
+            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                    <Select
+                        value={filters.club}
+                        onValueChange={value =>
+                            handleFilterChange('club', value)
+                        }
+                    >
+                        <SelectTrigger className="border-gray-700 bg-gray-800 text-gray-200">
+                            <SelectValue placeholder="Filter by club" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Clubs</SelectItem>
+                            {uniqueClubs.map(club => (
+                                <SelectItem key={club} value={club}>
+                                    {club}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Select
+                        value={filters.status}
+                        onValueChange={value =>
+                            handleFilterChange('status', value)
+                        }
+                    >
+                        <SelectTrigger className="border-gray-700 bg-gray-800 text-gray-200">
+                            <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="ACTIVE">Active</SelectItem>
+                            <SelectItem value="INACTIVE">Inactive</SelectItem>
+                            <SelectItem value="CLOSED">Closed</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Input
+                        placeholder="Filter by position..."
+                        value={filters.position}
+                        onChange={e =>
+                            handleFilterChange('position', e.target.value)
+                        }
+                        className="border-gray-700 bg-gray-800 text-gray-200 placeholder:text-gray-500"
+                    />
+                </div>
             </div>
 
             {renderNominationList()}
