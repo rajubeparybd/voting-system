@@ -6,6 +6,7 @@ import {
     FaClipboardList,
     FaCalendarAlt,
 } from 'react-icons/fa';
+import { BiSupport } from 'react-icons/bi';
 
 export function AdminSidebar() {
     return (
@@ -50,6 +51,13 @@ export function AdminSidebar() {
                 >
                     <FaCalendarAlt className="h-5 w-5" />
                     <span>Events</span>
+                </Link>
+                <Link
+                    href="/admin/support"
+                    className="flex items-center space-x-2 rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
+                >
+                    <BiSupport className="h-5 w-5" />
+                    <span>Support</span>
                 </Link>
             </nav>
         </aside>

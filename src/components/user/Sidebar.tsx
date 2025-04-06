@@ -128,34 +128,31 @@ export default function Sidebar({ isSidebarOpen }: SidebarProps) {
                     </span>
                 </Link>
 
-                <div className="pt-8">
-                    <hr className="mb-4 border-gray-700" />
-                    <Link
-                        href="/support"
-                        className={`flex items-center gap-3 rounded-xl px-6 py-3 transition-colors ${
-                            isActive('/support')
-                                ? 'bg-white text-[#1A1C23]'
-                                : 'text-gray-400 hover:bg-gray-800'
-                        }`}
+                <Link
+                    href="/user/support"
+                    className={`flex items-center gap-3 rounded-xl px-6 py-3 transition-colors ${
+                        isActive('/user/support')
+                            ? 'bg-white text-[#1A1C23]'
+                            : 'text-gray-400 hover:bg-gray-800'
+                    }`}
+                >
+                    <BiSupport className="text-xl" />
+                    <span
+                        className={
+                            isActive('/user/support') ? 'font-semibold' : ''
+                        }
                     >
-                        <BiSupport className="text-xl" />
-                        <span
-                            className={
-                                isActive('/support') ? 'font-semibold' : ''
-                            }
-                        >
-                            Support
-                        </span>
-                    </Link>
+                        Support
+                    </span>
+                </Link>
 
-                    <button
-                        onClick={() => signOut({ callbackUrl: '/auth/signin' })}
-                        className="mt-4 flex w-full cursor-pointer items-center gap-3 rounded-xl px-6 py-3 text-red-500 hover:bg-gray-800"
-                    >
-                        <HiOutlineLogout className="text-xl" />
-                        <span>Logout</span>
-                    </button>
-                </div>
+                <button
+                    onClick={() => signOut()}
+                    className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-6 py-3 text-gray-400 transition-colors hover:bg-gray-800"
+                >
+                    <HiOutlineLogout className="text-xl" />
+                    <span>Logout</span>
+                </button>
             </nav>
         </aside>
     );

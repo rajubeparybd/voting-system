@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { FiMenu, FiBell } from 'react-icons/fi';
+import { FiMenu } from 'react-icons/fi';
 import { Session } from 'next-auth';
 
 interface MobileHeaderProps {
@@ -19,10 +19,10 @@ export default function MobileHeader({
                 <FiMenu />
             </button>
             <div className="flex items-center gap-4">
-                <button className="relative">
+                {/* <button className="relative">
                     <FiBell className="text-2xl" />
                     <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"></span>
-                </button>
+                </button> */}
                 <div className="h-8 w-8 rounded-full bg-blue-500">
                     <Image
                         src={session?.user?.image || '/images/user.jpg'}

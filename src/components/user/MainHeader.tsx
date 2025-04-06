@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { FiBell } from 'react-icons/fi';
 import { Session } from 'next-auth';
 
 interface MainHeaderProps {
@@ -22,10 +21,10 @@ export default function MainHeader({ session }: MainHeaderProps) {
 
             {/* User Profile */}
             <div className="flex items-center gap-4">
-                <button className="relative">
+                {/* <button className="relative">
                     <FiBell className="text-2xl" />
                     <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"></span>
-                </button>
+                </button> */}
                 <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-blue-500">
                         <Image
