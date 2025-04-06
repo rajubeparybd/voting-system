@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SigninForm } from '@/components/signin-form';
 import Link from 'next/link';
@@ -16,7 +16,13 @@ export default function SignIn() {
                             </p>
                         </div>
 
-                        <SigninForm />
+                        <Suspense
+                            fallback={
+                                <div className="animate-pulse">Loading...</div>
+                            }
+                        >
+                            <SigninForm />
+                        </Suspense>
 
                         <div className="text-center text-sm">
                             Don&apos;t have an account?{' '}
