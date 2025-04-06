@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState } from '@/hooks/useActionState';
 import { useFormStatus } from 'react-dom';
 import { addTicketMessage, updateTicketStatus } from '@/actions/support';
 import { Button } from '@/components/ui/button';

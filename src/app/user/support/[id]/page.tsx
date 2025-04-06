@@ -5,20 +5,22 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { notFound } from 'next/navigation';
 
-interface TicketPageProps {
-    params: {
+interface PageProps {
+    params: Promise<{
         id: string;
-    };
+    }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function TicketPage({ params }: TicketPageProps) {
+export default async function TicketPage({ params }: PageProps) {
     const session = await auth();
     if (!session?.user) {
         return null;
     }
 
     try {
-        const ticket = await getTicket(params.id);
+        const resolvedParams = await params;
+        const ticket = await getTicket(resolvedParams.id);
 
         return (
             <div className="container mx-auto max-w-4xl py-8">

@@ -131,6 +131,7 @@ export async function getTicket(ticketId: string) {
         include: {
             user: {
                 select: {
+                    id: true,
                     name: true,
                     email: true,
                     studentId: true,

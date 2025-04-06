@@ -4,21 +4,22 @@ import { TicketDetails } from '@/components/support/TicketDetails';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { notFound, redirect } from 'next/navigation';
+import { use } from 'react';
 
-interface TicketPageProps {
-    params: {
-        id: string;
-    };
-}
+export default function AdminTicketPage({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    const resolvedParams = use(params);
+    const session = use(auth());
 
-export default async function AdminTicketPage({ params }: TicketPageProps) {
-    const session = await auth();
     if (!session?.user?.role?.includes('ADMIN')) {
         redirect('/');
     }
 
     try {
-        const ticket = await getTicket(params.id);
+        const ticket = use(getTicket(resolvedParams.id));
 
         return (
             <div className="container mx-auto max-w-4xl py-8">
