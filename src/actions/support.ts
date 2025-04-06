@@ -2,7 +2,6 @@
 
 import { db } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
-import { executeAction } from '@/lib/executeAction';
 import {
     SupportTicketSchema,
     SupportMessageSchema,
@@ -33,7 +32,7 @@ export async function createSupportTicket(
             category,
         });
 
-        const ticket = await db.supportTicket.create({
+        await db.supportTicket.create({
             data: {
                 ...validatedData,
                 userId: session.user.id,
@@ -206,7 +205,7 @@ export async function addTicketMessage(
             return { success: false, message: 'Not authorized' };
         }
 
-        const message = await db.supportMessage.create({
+        await db.supportMessage.create({
             data: {
                 content: validatedData.content,
                 ticketId: validatedData.ticketId,
@@ -262,7 +261,7 @@ export async function updateTicketStatus(
             priority,
         });
 
-        const ticket = await db.supportTicket.update({
+        await db.supportTicket.update({
             where: {
                 id: ticketId.toString(),
             },
