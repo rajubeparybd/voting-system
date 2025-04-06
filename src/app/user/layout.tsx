@@ -5,8 +5,7 @@ import MobileHeader from '@/components/user/MobileHeader';
 import Sidebar from '@/components/user/Sidebar';
 import Footer from '@/components/ui/Footer';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function UserLayout({
     children,
@@ -14,19 +13,7 @@ export default function UserLayout({
     children: React.ReactNode;
 }) {
     const { data: session, status } = useSession();
-    const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-    useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.push('/auth/signin');
-        } else if (
-            status === 'authenticated' &&
-            !session?.user?.role?.includes('USER')
-        ) {
-            router.push('/unauthorized');
-        }
-    }, [status, session, router]);
 
     if (status === 'loading') {
         return (

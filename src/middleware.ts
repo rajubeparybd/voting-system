@@ -17,39 +17,46 @@ interface CustomToken {
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // Skip middleware for auth-related routes and static files
+    if (
+        pathname.startsWith('/auth') ||
+        pathname.startsWith('/_next') ||
+        pathname.startsWith('/api/auth')
+    ) {
+        return NextResponse.next();
+    }
+
     // Get the token using next-auth
     const token = (await getToken({
         req: request,
         secret: process.env.NEXTAUTH_SECRET,
     })) as CustomToken | null;
 
-    // Define protected routes
-    const adminRoutes = [
-        '/admin',
-        '/admin/dashboard',
-        '/admin/voters',
-        '/admin/candidates',
+    // Define protected routes and their required roles
+    const protectedRoutes = [
+        { path: '/admin', role: Role.ADMIN },
+        { path: '/user', role: Role.USER },
     ];
-    const userRoutes = ['/user/dashboard', '/user/vote', '/user/profile'];
 
-    // Check if the current path is an admin route
-    const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
-    // Check if the current path is a user route
-    const isUserRoute = userRoutes.some(route => pathname.startsWith(route));
+    // Find matching protected route
+    const matchedRoute = protectedRoutes.find(route =>
+        pathname.startsWith(route.path)
+    );
 
-    // If no token and trying to access protected route
-    if (!token && (isAdminRoute || isUserRoute)) {
-        return NextResponse.redirect(new URL('/auth/signin', request.url));
-    }
+    // If it's a protected route
+    if (matchedRoute) {
+        // No token - redirect to sign in
+        if (!token) {
+            const signInUrl = new URL('/auth/signin', request.url);
+            signInUrl.searchParams.set('callbackUrl', pathname);
+            return NextResponse.redirect(signInUrl);
+        }
 
-    // If token exists but trying to access admin route without admin role
-    if (token && isAdminRoute && !token.role?.includes(Role.ADMIN)) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
-
-    // If token exists but trying to access user route without user role
-    if (token && isUserRoute && !token.role?.includes(Role.USER)) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
+        // Check if user has required role
+        const hasRequiredRole = token.role?.includes(matchedRoute.role);
+        if (!hasRequiredRole) {
+            return NextResponse.redirect(new URL('/unauthorized', request.url));
+        }
     }
 
     return NextResponse.next();
@@ -57,5 +64,14 @@ export async function middleware(request: NextRequest) {
 
 // Configure which routes to run middleware on
 export const config = {
-    matcher: ['/admin/:path*', '/user/:path*'],
+    matcher: [
+        /*
+         * Match all request paths except:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - public folder
+         */
+        '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    ],
 };

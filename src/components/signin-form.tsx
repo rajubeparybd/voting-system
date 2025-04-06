@@ -3,9 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
@@ -14,6 +13,7 @@ import { FiLoader } from 'react-icons/fi';
 
 export function SigninForm({ className }: React.ComponentProps<'div'>) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -33,31 +33,28 @@ export function SigninForm({ className }: React.ComponentProps<'div'>) {
                 return;
             }
 
+            const callbackUrl =
+                searchParams.get('callbackUrl') || '/user/dashboard';
+
             const result = await signIn('credentials', {
                 studentId,
                 password,
                 redirect: false,
+                callbackUrl,
             });
 
             if (result?.error) {
-                console.error('Sign in failed:', result.error);
                 setError(
-                    result?.code === 'credentials'
+                    result.error === 'CredentialsSignin'
                         ? 'Invalid student ID or password'
                         : 'Failed to sign in. Please try again.'
                 );
                 return;
             }
 
-            // Check user role and redirect accordingly
-            const response = await fetch('/api/auth/session');
-            const session = await response.json();
-
-            if (session?.user?.role?.includes('ADMIN')) {
-                router.push('/admin/dashboard');
-            } else {
-                router.push('/user/dashboard');
-            }
+            // Successful sign-in - redirect to callback URL or default route
+            router.push(callbackUrl);
+            router.refresh();
         } catch (error) {
             console.error('Sign in error:', error);
             setError('An unexpected error occurred. Please try again later.');
@@ -81,49 +78,33 @@ export function SigninForm({ className }: React.ComponentProps<'div'>) {
                 </Alert>
             )}
 
-            <div className="grid gap-3">
-                <Label htmlFor="studentId">Student ID</Label>
-                <Input
-                    id="studentId"
-                    name="studentId"
-                    type="number"
-                    placeholder="22234103301"
-                    required
-                    disabled={isLoading}
-                    className="transition-opacity duration-200"
-                    style={{ opacity: isLoading ? 0.7 : 1 }}
-                />
-            </div>
-
-            <div className="grid gap-3">
-                <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <Link
-                        href="#"
-                        className="text-muted-foreground hover:text-primary ml-auto text-sm underline-offset-4 hover:underline"
-                        tabIndex={isLoading ? -1 : 0}
-                    >
-                        Forgot your password?
-                    </Link>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="studentId">Student ID</Label>
+                    <Input
+                        id="studentId"
+                        name="studentId"
+                        type="text"
+                        placeholder="Enter your student ID"
+                        required
+                        disabled={isLoading}
+                    />
                 </div>
-                <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="*** ***"
-                    required
-                    disabled={isLoading}
-                    className="transition-opacity duration-200"
-                    style={{ opacity: isLoading ? 0.7 : 1 }}
-                />
+
+                <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        required
+                        disabled={isLoading}
+                    />
+                </div>
             </div>
 
-            <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-                variant="default"
-            >
+            <Button type="submit" disabled={isLoading}>
                 {isLoading ? (
                     <>
                         <FiLoader className="mr-2 h-4 w-4 animate-spin" />

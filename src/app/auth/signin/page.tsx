@@ -1,23 +1,9 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SigninForm } from '@/components/signin-form';
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-const SignIn = async () => {
-    const session = await auth();
-
-    if (session?.user) {
-        const userRole = session.user.role;
-
-        if (userRole?.includes('ADMIN')) {
-            redirect('/admin/dashboard');
-        } else {
-            redirect('/user/dashboard');
-        }
-    }
-
+export default function SignIn() {
     return (
         <div className="grid min-h-screen place-items-center">
             <Card className="w-full max-w-lg overflow-hidden p-0">
@@ -51,6 +37,4 @@ const SignIn = async () => {
             </div>
         </div>
     );
-};
-
-export default SignIn;
+}
