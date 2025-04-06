@@ -2,8 +2,21 @@ import React, { Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SigninForm } from '@/components/signin-form';
 import Link from 'next/link';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { Role } from '@prisma/client';
 
-export default function SignIn() {
+export default async function SignIn() {
+    const session = await auth();
+
+    if (session) {
+        if (session.user.role.includes(Role.ADMIN)) {
+            redirect('/admin/dashboard');
+        } else if (session.user.role.includes(Role.USER)) {
+            redirect('/user/dashboard');
+        }
+    }
+
     return (
         <div className="grid min-h-screen place-items-center">
             <Card className="w-full max-w-lg overflow-hidden p-0">

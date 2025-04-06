@@ -1,7 +1,7 @@
-import { AdminSidebar } from '@/components/admin/sidebar';
-import { AdminBody } from '@/components/admin/body';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { Role } from '@prisma/client';
+import { AdminLayoutClient } from '@/components/admin/AdminLayoutClient';
 
 export default async function AdminLayout({
     children,
@@ -14,14 +14,12 @@ export default async function AdminLayout({
         redirect('/auth/signin');
     }
 
-    return (
-        <div className="from-background via-background/95 to-background/90 flex min-h-screen flex-col bg-gradient-to-br">
-            <div className="flex flex-1 shadow-md">
-                <AdminSidebar />
-                <div className="flex flex-1 flex-col">
-                    <AdminBody session={session}>{children}</AdminBody>
-                </div>
-            </div>
-        </div>
-    );
+    if (!session.user.role.includes(Role.ADMIN)) {
+        if (session.user.role.includes(Role.USER)) {
+            redirect('/user/dashboard');
+        }
+        redirect('/unauthorized');
+    }
+
+    return <AdminLayoutClient session={session}>{children}</AdminLayoutClient>;
 }

@@ -4,14 +4,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { Role } from '@prisma/client';
 
 const SignUp = async () => {
     const session = await auth();
-    if (session?.user) {
-        const userRole = session.user.role;
-        if (Array.isArray(userRole) && userRole.includes('ADMIN')) {
+
+    if (session) {
+        if (session.user.role.includes(Role.ADMIN)) {
             redirect('/admin/dashboard');
-        } else {
+        } else if (session.user.role.includes(Role.USER)) {
             redirect('/user/dashboard');
         }
     }
